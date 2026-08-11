@@ -1,0 +1,35 @@
+{
+  "name": "smart-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test --network hardhat",
+    "test:token": "hardhat test test/QuaiForgeToken.test.js --network hardhat",
+    "test:escrow": "hardhat test test/QuaiForgeEscrow.test.js --network hardhat",
+    "test:multisig": "hardhat test test/QuaiForgeMultisig.test.js --network hardhat",
+    "deploy:token": "hardhat run scripts/deploy-token.js --network orchard",
+    "deploy:escrow": "hardhat run scripts/deploy-escrow.js --network orchard",
+    "deploy:multisig": "hardhat run scripts/deploy-multisig.js --network orchard",
+    "node": "hardhat node",
+    "clean": "hardhat clean",
+    "export-artifacts": "node scripts/export-artifacts.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "chai": "^4.4.1",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.4",
+    "hardhat": "^2.22.17",
+    "quai-hardhat-plugin": "^1.0.3"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "4.9.6"
+  }
+}

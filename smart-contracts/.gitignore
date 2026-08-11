@@ -1,0 +1,31 @@
+# QuaiForge smart-contracts — local gitignore
+# (Root .gitignore handles node_modules, .env, artifacts, cache, typechain-types globally)
+
+# Compiled artifacts and Hardhat cache
+artifacts/
+cache/
+typechain-types/
+
+# Environment secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+
+# npm
+node_modules/
+
+# Editor
+.DS_Store
+.idea/
+.vscode/
+
+# Hardhat network state
+deployments/
+.openzeppelin/
+
+# Coverage output
+coverage/
+coverage.json
+
+# Local scripts that may contain private keys or addresses
+deploy-addresses.json
