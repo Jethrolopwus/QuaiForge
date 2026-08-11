@@ -1,18 +1,22 @@
 // QuaiForge — Hardhat Configuration
-// Target: Orchard Testnet, Cyprus-1 shard
-// Solidity pinned to 0.8.20 — hard ceiling on Quai (anything newer fails to deploy)
+// Target: Quai Orchard Testnet, Cyprus-1 shard
 //
-// NOTE on quai-hardhat-plugin:
-//   The plugin intercepts the compile task to use the SolidityX binary, which is
-//   needed only for contracts that use QIP-2 (Quai-specific) opcodes.
-//   QuaiForge's three v1 templates (Token, Escrow, Multisig) are pure standard
-//   EVM contracts — they do NOT use any QIP-2 opcodes — so standard solc 0.8.20
-//   produces the correct artifacts.  The plugin is therefore NOT required here.
-//   If you later add contracts that use Quai-native opcodes, re-enable the plugin
-//   and set up the SolidityX binary path in solidityx.compilerPath.
+// Contract: PaymentRegistry (pay-with-blip-v1)
+//   • No OpenZeppelin — zero-dependency contract
+//   • Solidity pinned to 0.8.20 — hard ceiling on Quai Orchard
+//   • EVM version locked to paris — PUSH0 (Shanghai) and later opcodes are not
+//     supported on Quai; anything higher than paris will fail to deploy
+//   • Standard CREATE (no CREATE2) — quais.js auto-grinds the shard-prefixed
+//     contract address at deployment; CREATE2 breaks that grinding
+//   • quai-hardhat-plugin is NOT required — PaymentRegistry uses zero QIP-2
+//     opcodes; standard solc 0.8.20 produces correct artifacts for Orchard
 //
-// Deployment to Orchard testnet works with standard ethers/hardhat deploy scripts
-// via the orchard network config below — no plugin required for that either.
+// Networks:
+//   orchard   — Orchard testnet, chainId 15000
+//   localhost — local Hardhat node for testing
+//
+// Default network: orchard (deploy scripts target testnet by default)
+// Tests always pass --network hardhat (the in-process network)
 
 require("dotenv").config();
 require("@nomicfoundation/hardhat-ethers");
@@ -21,19 +25,19 @@ require("@nomicfoundation/hardhat-chai-matchers");
 /** @type {import('hardhat/config').HardhatUserConfig} */
 module.exports = {
   // --------------------------------------------------------------------------
-  // Solidity — pinned exact version, no floating pragma
+  // Solidity — exact pinned version, no floating pragma
   // --------------------------------------------------------------------------
   solidity: {
     version: "0.8.20",
     settings: {
       optimizer: {
         enabled: true,
-        // 200 runs: good balance between deploy cost and per-call cost.
-        // IMPORTANT: record this value for Quaiscan contract verification (§6.4).
+        // 200 runs: standard balance between deploy cost and call cost.
+        // Record this value when verifying on Quaiscan (compiler settings must match).
         runs: 200,
       },
       // paris = highest EVM version fully supported by Quai's EVM environment.
-      // Do not use a later EVM version — opcodes like PUSH0 (Shanghai) may fail.
+      // Do NOT change to shanghai, cancun, or later.
       evmVersion: "paris",
     },
   },
@@ -42,30 +46,33 @@ module.exports = {
   // Networks
   // --------------------------------------------------------------------------
   networks: {
-    // Orchard testnet — Cyprus-1 shard (only shard needed for v1 templates)
+    // Orchard testnet — Cyprus-1 shard
+    // Fund deployer: https://orchard.faucet.quai.network
     orchard: {
-      url: process.env.ORCHARD_RPC_URL || "https://orchard.rpc.quai.network/cyprus1",
-      chainId: 15000,
+      url:      process.env.ORCHARD_RPC_URL || "https://orchard.rpc.quai.network/cyprus1",
+      chainId:  15000,
       accounts: process.env.DEPLOYER_PRIVATE_KEY
         ? [process.env.DEPLOYER_PRIVATE_KEY]
         : [],
     },
 
-    // localhost for local tests (npx hardhat node)
+    // Local node — used for interactive development
     localhost: {
-      url: "http://127.0.0.1:8545",
+      url:     "http://127.0.0.1:8545",
       chainId: 1337,
     },
+
+    // hardhat (in-process) is the implicit default for `npx hardhat test`
   },
 
-  // Default to orchard for deployment scripts.
-  // Tests run against the built-in hardhat in-process network:
+  // Deployment scripts default to orchard.
+  // Tests use the in-process Hardhat network:
+  //   npm test                       → --network hardhat (set in package.json script)
   //   npx hardhat test --network hardhat
-  //   npm test   (package.json script adds --network hardhat)
   defaultNetwork: "orchard",
 
   // --------------------------------------------------------------------------
-  // Artifact paths
+  // Paths
   // --------------------------------------------------------------------------
   paths: {
     sources:   "./contracts",
@@ -76,7 +83,7 @@ module.exports = {
   },
 
   // --------------------------------------------------------------------------
-  // Mocha test timeout — Orchard block times can be slower than localhost
+  // Mocha — generous timeout for Orchard block times during live-network tests
   // --------------------------------------------------------------------------
   mocha: {
     timeout: 120_000, // 2 minutes

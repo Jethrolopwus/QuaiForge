@@ -1,19 +1,15 @@
 {
   "name": "smart-contracts",
   "version": "1.0.0",
-  "description": "",
+  "description": "QuaiForge — PaymentRegistry smart contract (Pay with Blip, Quai Orchard testnet)",
   "main": "index.js",
   "scripts": {
-    "compile": "hardhat compile",
-    "test": "hardhat test --network hardhat",
-    "test:token": "hardhat test test/QuaiForgeToken.test.js --network hardhat",
-    "test:escrow": "hardhat test test/QuaiForgeEscrow.test.js --network hardhat",
-    "test:multisig": "hardhat test test/QuaiForgeMultisig.test.js --network hardhat",
-    "deploy:token": "hardhat run scripts/deploy-token.js --network orchard",
-    "deploy:escrow": "hardhat run scripts/deploy-escrow.js --network orchard",
-    "deploy:multisig": "hardhat run scripts/deploy-multisig.js --network orchard",
-    "node": "hardhat node",
-    "clean": "hardhat clean",
+    "compile":          "hardhat compile",
+    "test":             "hardhat test test/PaymentRegistry.test.js --network hardhat",
+    "deploy":           "hardhat run scripts/deploy-payment-registry.js --network orchard",
+    "deploy:local":     "hardhat run scripts/deploy-payment-registry.js --network localhost",
+    "node":             "hardhat node",
+    "clean":            "hardhat clean",
     "export-artifacts": "node scripts/export-artifacts.js"
   },
   "keywords": [],
@@ -26,10 +22,6 @@
     "chai": "^4.4.1",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.4",
-    "hardhat": "^2.22.17",
-    "quai-hardhat-plugin": "^1.0.3"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "4.9.6"
+    "hardhat": "^2.22.17"
   }
 }
