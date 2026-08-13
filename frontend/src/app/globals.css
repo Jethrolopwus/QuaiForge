@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #060f0f;
+  color: #f3f6f2;
+}
+
+/* QuaiForge signature atmosphere: faint green grid over near-black */
+.forge-grid {
+  background-image:
+    linear-gradient(rgba(0, 230, 118, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 230, 118, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.forge-halo {
+  background: radial-gradient(
+    ellipse 60% 45% at 50% 0%,
+    rgba(0, 230, 118, 0.14) 0%,
+    rgba(0, 230, 118, 0) 70%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
