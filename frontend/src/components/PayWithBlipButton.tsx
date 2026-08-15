@@ -5,12 +5,17 @@
  * Entry point, embeddable in any host page. A merchant drops this one
  * component in with an order; everything else (invoice, hand-off,
  * confirmation, receipt) is handled by the widget.
+ *
+ * `wallet` is optional. When provided (e.g. from a page that already uses
+ * useWallet in the Navbar), the checkout skips the quai_requestAccounts
+ * prompt and uses the pre-connected provider/address directly.
  */
 
 import { useState } from "react";
 import { quais } from "quais";
 import { useInvoice } from "@/hooks/useInvoice";
 import { CheckoutModal } from "./CheckoutModal";
+import type { Eip1193Provider } from "@/lib/BlipProviderDetector";
 
 export interface PayWithBlipOrder {
   merchantAddress: string;
@@ -19,9 +24,20 @@ export interface PayWithBlipOrder {
   itemName: string;
 }
 
-export function PayWithBlipButton({ order }: { order: PayWithBlipOrder }) {
+export interface WalletContext {
+  provider: Eip1193Provider | null;
+  address: string | null;
+}
+
+export function PayWithBlipButton({
+  order,
+  wallet,
+}: {
+  order: PayWithBlipOrder;
+  wallet?: WalletContext;
+}) {
   const [open, setOpen] = useState(false);
-  const { state, startCheckout, reset, insideBlip } = useInvoice(order);
+  const { state, startCheckout, reset, insideBlip } = useInvoice(order, wallet);
 
   const amountQuai = quais.formatQuai(order.amountWei);
 
