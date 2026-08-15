@@ -7,17 +7,27 @@
  * headings, Cormorant Garamond body copy, cream background, dark-green accents,
  * gold dividers. The embedded PayWithBlipButton is the only QuaiForge UI element
  * on each product card — exactly how a real merchant would integrate it.
+ *
+ * Startup checks surfaced here:
+ *   • getContractConfigWarning() — shown as an amber banner if the contract
+ *     address is missing or invalid (dev/staging only; production should have
+ *     this set in .env.local before launch).
+ *   • isWrongChain / switchChain — forwarded to every PayWithBlipButton so
+ *     the checkout modal can prompt for a network switch before blocking the
+ *     user with a cryptic RPC error.
  */
 
 import { quais } from "quais";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { ShoppingBag, MapPin, Star, ArrowRight } from "lucide-react";
+import { ShoppingBag, MapPin, Star, ArrowRight, AlertTriangle } from "lucide-react";
 import {
   PayWithBlipButton,
   type PayWithBlipOrder,
 } from "@/components/PayWithBlipButton";
 import { Footer } from "@/components/Footer";
+import { useWallet } from "@/hooks/useWallet";
+import { getContractConfigWarning } from "@/lib/paymentRegistry";
 
 /* ─── Animation variants ─────────────────────────────────── */
 const stagger = {
@@ -201,7 +211,17 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 /* ─── Product card ───────────────────────────────────────── */
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({
+  product,
+  isWrongChain,
+  switchChain,
+  walletContext,
+}: {
+  product: Product;
+  isWrongChain?: boolean;
+  switchChain?: () => void;
+  walletContext?: { provider: import("@/lib/BlipProviderDetector").Eip1193Provider | null; address: string | null };
+}) {
   const order: PayWithBlipOrder = {
     merchantAddress: MERCHANT_ADDRESS,
     amountWei: quais.parseQuai(product.priceQuai),
@@ -283,7 +303,12 @@ function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Embedded QuaiForge widget */}
-        <PayWithBlipButton order={order} />
+        <PayWithBlipButton
+          order={order}
+          wallet={walletContext}
+          isWrongChain={isWrongChain}
+          switchChain={switchChain}
+        />
       </div>
     </motion.article>
   );
@@ -294,8 +319,29 @@ export default function WidgetDemoPage() {
   const gridRef = useRef(null);
   const gridInView = useInView(gridRef, { once: true, margin: "0px 0px -60px 0px" });
 
+  // Wallet state — forwarded to every PayWithBlipButton so CheckoutModal
+  // can surface a wrong-chain banner instead of a cryptic RPC error.
+  const wallet = useWallet();
+  const walletContext = wallet.isConnected
+    ? { provider: wallet.provider, address: wallet.address }
+    : undefined;
+
+  // Contract config warning — shown as a sticky amber banner at the top of
+  // the page if NEXT_PUBLIC_CONTRACT_ADDRESS is missing or malformed.
+  const configWarning = getContractConfigWarning();
+
   return (
     <main className="bg-cream min-h-screen overflow-x-hidden">
+      {/* ── Contract config warning banner ──────────────────── */}
+      {configWarning && (
+        <div className="sticky top-0 z-40 flex items-start gap-3 bg-amber-950/95 px-6 py-3 backdrop-blur-sm border-b border-amber-500/30">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-400" aria-hidden />
+          <p className="text-sm text-amber-200">
+            <span className="font-semibold text-amber-300">Config warning: </span>
+            {configWarning}
+          </p>
+        </div>
+      )}
       {/* Merchant hero header */}
       <section className="relative pt-28 pb-16 bg-cream overflow-hidden">
         {/* Decorative bg blobs */}
@@ -415,7 +461,13 @@ export default function WidgetDemoPage() {
           {/* Cards */}
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {PRODUCTS.map((p) => (
-              <ProductCard key={p.orderRef} product={p} />
+              <ProductCard
+                key={p.orderRef}
+                product={p}
+                walletContext={walletContext}
+                isWrongChain={wallet.isWrongChain}
+                switchChain={wallet.switchChain}
+              />
             ))}
           </div>
         </motion.div>

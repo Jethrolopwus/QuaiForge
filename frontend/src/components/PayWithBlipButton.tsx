@@ -9,6 +9,10 @@
  * `wallet` is optional. When provided (e.g. from a page that already uses
  * useWallet in the Navbar), the checkout skips the quai_requestAccounts
  * prompt and uses the pre-connected provider/address directly.
+ *
+ * `isWrongChain` and `switchChain` are forwarded from the host page's
+ * useWallet() call so CheckoutModal can surface a chain-switch prompt
+ * instead of letting the user hit a cryptic RPC error.
  */
 
 import { useState } from "react";
@@ -32,12 +36,18 @@ export interface WalletContext {
 export function PayWithBlipButton({
   order,
   wallet,
+  isWrongChain,
+  switchChain,
 }: {
   order: PayWithBlipOrder;
   wallet?: WalletContext;
+  /** True when the connected wallet is on the wrong chain (not Cyprus-1). */
+  isWrongChain?: boolean;
+  /** Triggers wallet_switchEthereumChain — forwarded to CheckoutModal. */
+  switchChain?: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const { state, startCheckout, reset, insideBlip } = useInvoice(order, wallet);
+  const { state, startCheckout, cancel, reset, insideBlip } = useInvoice(order, wallet);
 
   const amountQuai = quais.formatQuai(order.amountWei);
 
@@ -62,7 +72,10 @@ export function PayWithBlipButton({
         }}
         state={state}
         startCheckout={startCheckout}
+        cancel={cancel}
         insideBlip={insideBlip}
+        isWrongChain={isWrongChain}
+        switchChain={switchChain}
         order={order}
       />
     </>
