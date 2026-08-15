@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "QuaiForge — Pay with Blip",
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         <Navbar />
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

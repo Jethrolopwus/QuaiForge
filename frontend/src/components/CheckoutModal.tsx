@@ -150,6 +150,8 @@ export function CheckoutModal(props: {
                   {!props.insideBlip && (
                     <a
                       href={openInBlipLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="block w-full rounded-xl border border-forge-accent py-3 text-center text-sm text-forge-primary transition hover:border-forge-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-forge-primary"
                     >
                       Open in Blip app

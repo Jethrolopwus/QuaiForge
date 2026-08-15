@@ -164,6 +164,8 @@ function NoWalletPanel({ onClose }: { onClose: () => void }) {
       {/* Blip option */}
       <a
         href={blipLink}
+        target="_blank"
+        rel="noopener noreferrer"
         onClick={onClose}
         className="flex items-center gap-3 w-full rounded-xl border border-gold-line/30 bg-cream-dark px-4 py-3.5 transition hover:border-green-deep/40 hover:bg-cream focus:outline-none focus:ring-2 focus:ring-green-deep group"
       >

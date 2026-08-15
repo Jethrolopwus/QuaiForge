@@ -45,7 +45,7 @@ export function PayWithBlipButton({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-forge-secondary px-4 py-3 font-semibold text-forge-ink shadow-glow-sm transition hover:bg-forge-primary hover:shadow-glow focus:outline-none focus:ring-2 focus:ring-forge-primary focus:ring-offset-2 focus:ring-offset-forge-ink"
+        className="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-warm-brown px-4 py-3 font-semibold text-white shadow-glow-sm transition hover:bg-warm-brown hover:shadow-glow focus:outline-none focus:ring-2 focus:ring-forge-primary focus:ring-offset-2 focus:ring-offset-forge-ink"
       >
         <BlipGlyph />
         Pay with Blip
