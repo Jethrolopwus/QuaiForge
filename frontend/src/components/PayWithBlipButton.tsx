@@ -5,12 +5,21 @@
  * Entry point, embeddable in any host page. A merchant drops this one
  * component in with an order; everything else (invoice, hand-off,
  * confirmation, receipt) is handled by the widget.
+ *
+ * `wallet` is optional. When provided (e.g. from a page that already uses
+ * useWallet in the Navbar), the checkout skips the quai_requestAccounts
+ * prompt and uses the pre-connected provider/address directly.
+ *
+ * `isWrongChain` and `switchChain` are forwarded from the host page's
+ * useWallet() call so CheckoutModal can surface a chain-switch prompt
+ * instead of letting the user hit a cryptic RPC error.
  */
 
 import { useState } from "react";
 import { quais } from "quais";
 import { useInvoice } from "@/hooks/useInvoice";
 import { CheckoutModal } from "./CheckoutModal";
+import type { Eip1193Provider } from "@/lib/BlipProviderDetector";
 
 export interface PayWithBlipOrder {
   merchantAddress: string;
@@ -19,9 +28,26 @@ export interface PayWithBlipOrder {
   itemName: string;
 }
 
-export function PayWithBlipButton({ order }: { order: PayWithBlipOrder }) {
+export interface WalletContext {
+  provider: Eip1193Provider | null;
+  address: string | null;
+}
+
+export function PayWithBlipButton({
+  order,
+  wallet,
+  isWrongChain,
+  switchChain,
+}: {
+  order: PayWithBlipOrder;
+  wallet?: WalletContext;
+  /** True when the connected wallet is on the wrong chain (not Cyprus-1). */
+  isWrongChain?: boolean;
+  /** Triggers wallet_switchEthereumChain — forwarded to CheckoutModal. */
+  switchChain?: () => void;
+}) {
   const [open, setOpen] = useState(false);
-  const { state, startCheckout, reset, insideBlip } = useInvoice(order);
+  const { state, startCheckout, cancel, reset, insideBlip } = useInvoice(order, wallet);
 
   const amountQuai = quais.formatQuai(order.amountWei);
 
@@ -29,7 +55,7 @@ export function PayWithBlipButton({ order }: { order: PayWithBlipOrder }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-forge-secondary px-4 py-3 font-semibold text-forge-ink shadow-glow-sm transition hover:bg-forge-primary hover:shadow-glow focus:outline-none focus:ring-2 focus:ring-forge-primary focus:ring-offset-2 focus:ring-offset-forge-ink"
+        className="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-warm-brown px-4 py-3 font-semibold text-white shadow-glow-sm transition hover:bg-warm-brown hover:shadow-glow focus:outline-none focus:ring-2 focus:ring-forge-primary focus:ring-offset-2 focus:ring-offset-forge-ink"
       >
         <BlipGlyph />
         Pay with Blip
@@ -46,7 +72,10 @@ export function PayWithBlipButton({ order }: { order: PayWithBlipOrder }) {
         }}
         state={state}
         startCheckout={startCheckout}
+        cancel={cancel}
         insideBlip={insideBlip}
+        isWrongChain={isWrongChain}
+        switchChain={switchChain}
         order={order}
       />
     </>

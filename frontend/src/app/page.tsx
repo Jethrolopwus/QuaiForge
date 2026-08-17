@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { HeroSection } from "@/components/HeroSection";
 import {
   ArrowRight,
   Zap,

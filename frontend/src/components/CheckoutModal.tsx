@@ -8,6 +8,13 @@
  * payment from two independent sources in parallel (README §Resilience
  * Notes) — the modal renders each source as its own live track so the
  * resilience mechanism is visible, not hidden behind a spinner.
+ *
+ * Banners (in priority order, only one shown at a time):
+ *   1. Wrong-chain — wallet is on a chain other than Cyprus-1 (chainId 0x9).
+ *      Blocks checkout until the user switches; shows a "Switch network"
+ *      button that calls switchChain() from useWallet.
+ *   2. Demo mode — NEXT_PUBLIC_CONTRACT_ADDRESS is not set. All steps run
+ *      as a simulation; the banner makes this impossible to miss.
  */
 
 import { useEffect } from "react";
@@ -21,7 +28,13 @@ export function CheckoutModal(props: {
   onClose: () => void;
   state: CheckoutState;
   startCheckout: () => void;
+  /** cancel() from useInvoice — aborts checkout and cancels invoice on-chain. */
+  cancel: () => void;
   insideBlip: boolean;
+  /** True when the connected wallet is on the wrong chain (not Cyprus-1). */
+  isWrongChain?: boolean;
+  /** Triggers a wallet_switchEthereumChain request. */
+  switchChain?: () => void;
   order: {
     merchantAddress: string;
     amountWei: bigint;
@@ -48,11 +61,22 @@ export function CheckoutModal(props: {
   if (!open) return null;
 
   const amountQuai = quais.formatQuai(order.amountWei);
+
+  // "Busy" means a transaction is in-flight — disable close and show spinner label.
   const busy =
     state.step === "creating" ||
     state.step === "awaitingPayment" ||
     state.step === "verifying" ||
     state.step === "confirming";
+
+  // Cancel is available while we're waiting for the user to approve in their
+  // wallet (awaitingPayment). Once the send is submitted the hook ignores it.
+  const canCancel = state.step === "awaitingPayment";
+
+  const isTerminal =
+    state.step === "confirmed" ||
+    state.step === "cancelled" ||
+    state.step === "failed";
 
   return (
     <div
@@ -87,7 +111,43 @@ export function CheckoutModal(props: {
         </div>
 
         <div className="p-6">
-          {state.step === "confirmed" ? (
+          {/* ── Wrong-chain banner ─────────────────────────────────────── */}
+          {props.isWrongChain && state.step === "idle" && (
+            <div className="mb-5 rounded-xl border border-amber-500/40 bg-amber-950/40 p-4">
+              <p className="mb-1 font-mono text-[11px] uppercase tracking-wider text-amber-400">
+                Wrong network
+              </p>
+              <p className="mb-3 text-sm text-amber-200">
+                Your wallet is connected to the wrong chain. Switch to{" "}
+                <span className="font-semibold">Quai Orchard (Cyprus-1)</span> to
+                continue.
+              </p>
+              {props.switchChain && (
+                <button
+                  onClick={props.switchChain}
+                  className="w-full rounded-lg bg-amber-500/20 py-2.5 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  Switch network
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ── Demo mode banner ───────────────────────────────────────── */}
+          {state.demoMode && (
+            <div className="mb-5 rounded-xl border border-forge-accent/40 bg-forge-accent/10 p-4">
+              <p className="mb-1 font-mono text-[11px] uppercase tracking-wider text-forge-primary">
+                Demo / simulation mode
+              </p>
+              <p className="text-sm text-forge-primary/80">
+                No contract address is configured. This checkout is a simulated
+                demo — no real transactions are sent.
+              </p>
+            </div>
+          )}
+
+          {/* ── Confirmed ─────────────────────────────────────────────── */}
+          {state.step === "confirmed" && (
             <ReceiptCard
               amountWei={order.amountWei}
               orderRef={order.orderRef}
@@ -97,7 +157,30 @@ export function CheckoutModal(props: {
               payer={state.payer}
               demoMode={state.demoMode}
             />
-          ) : (
+          )}
+
+          {/* ── Cancelled ─────────────────────────────────────────────── */}
+          {state.step === "cancelled" && (
+            <>
+              <div className="mb-6 rounded-xl border border-neutral-500/30 bg-neutral-900/50 p-4 text-sm text-neutral-300">
+                <p className="mb-1 font-mono text-[11px] uppercase tracking-wider text-neutral-400">
+                  Checkout cancelled
+                </p>
+                {state.invoiceId !== null
+                  ? `Invoice #${state.invoiceId.toString()} has been cancelled on-chain.`
+                  : "The checkout was cancelled before an invoice was created."}
+              </div>
+              <button
+                onClick={() => { props.cancel(); props.onClose(); }}
+                className="w-full rounded-xl border border-forge-line py-3 text-sm text-forge-mist transition hover:border-forge-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-forge-primary"
+              >
+                Close
+              </button>
+            </>
+          )}
+
+          {/* ── Active / idle / failed steps ──────────────────────────── */}
+          {!isTerminal && (
             <>
               {/* Order summary */}
               <div className="mb-6 rounded-xl border border-forge-line bg-forge-dark p-4">
@@ -143,13 +226,16 @@ export function CheckoutModal(props: {
                 <div className="space-y-3">
                   <button
                     onClick={props.startCheckout}
-                    className="w-full rounded-xl bg-forge-secondary py-3.5 font-semibold text-forge-ink shadow-glow-sm transition hover:bg-forge-primary focus:outline-none focus:ring-2 focus:ring-forge-primary focus:ring-offset-2 focus:ring-offset-forge-ink"
+                    disabled={!!props.isWrongChain}
+                    className="w-full rounded-xl bg-forge-secondary py-3.5 font-semibold text-forge-ink shadow-glow-sm transition hover:bg-forge-primary focus:outline-none focus:ring-2 focus:ring-forge-primary focus:ring-offset-2 focus:ring-offset-forge-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Pay {amountQuai} QUAI
                   </button>
                   {!props.insideBlip && (
                     <a
                       href={openInBlipLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="block w-full rounded-xl border border-forge-accent py-3 text-center text-sm text-forge-primary transition hover:border-forge-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-forge-primary"
                     >
                       Open in Blip app
@@ -167,8 +253,24 @@ export function CheckoutModal(props: {
                 </button>
               )}
 
-              {busy && (
+              {/* Cancel button — only shown while waiting for wallet approval */}
+              {canCancel && (
+                <button
+                  onClick={props.cancel}
+                  className="mt-3 w-full rounded-xl border border-forge-line py-2.5 text-sm text-forge-mist transition hover:border-red-500/60 hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-red-500/60"
+                >
+                  Cancel payment
+                </button>
+              )}
+
+              {busy && !canCancel && (
                 <p className="text-center font-mono text-[11px] uppercase tracking-widest text-forge-mist">
+                  {busyLabel(state.step)}
+                </p>
+              )}
+
+              {canCancel && (
+                <p className="mt-2 text-center font-mono text-[11px] uppercase tracking-widest text-forge-mist">
                   {busyLabel(state.step)}
                 </p>
               )}

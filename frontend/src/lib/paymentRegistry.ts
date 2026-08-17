@@ -40,6 +40,29 @@ export function isContractConfigured(): boolean {
   return CONTRACT_ADDRESS.length > 0;
 }
 
+/**
+ * Validates the contract address and ABI version at startup.
+ * Returns a human-readable warning string if something looks wrong, or null
+ * if everything is fine. The caller should surface this prominently in the UI.
+ *
+ * Checks performed:
+ *   1. NEXT_PUBLIC_CONTRACT_ADDRESS is set and non-empty
+ *   2. Address passes quais.isAddress (basic hex format check)
+ *   3. ABI templateVersion matches the expected "pay-with-blip-v1"
+ */
+export function getContractConfigWarning(): string | null {
+  if (!CONTRACT_ADDRESS) {
+    return "NEXT_PUBLIC_CONTRACT_ADDRESS is not set — running in demo/simulation mode.";
+  }
+  if (!quais.isAddress(CONTRACT_ADDRESS)) {
+    return `NEXT_PUBLIC_CONTRACT_ADDRESS "${CONTRACT_ADDRESS}" is not a valid address — running in demo/simulation mode.`;
+  }
+  if (artifact.templateVersion !== "pay-with-blip-v1") {
+    return `ABI templateVersion mismatch: expected "pay-with-blip-v1", got "${artifact.templateVersion}". Re-run npm run export-artifacts in smart-contracts/.`;
+  }
+  return null;
+}
+
 /** Read-only contract bound to the shared HTTP provider. */
 export function getReadContract(): quais.Contract {
   return new quais.Contract(CONTRACT_ADDRESS, artifact.abi, getHttpProvider());
@@ -56,7 +79,14 @@ export async function getWriteContract(
   return new quais.Contract(CONTRACT_ADDRESS, artifact.abi, signer);
 }
 
-/** createInvoice(merchant, amount, orderRef) → invoiceId (README flow step 2). */
+/**
+ * createInvoice(merchant, amount, orderRef) → invoiceId (README flow step 2).
+ *
+ * Primary: parses the InvoiceCreated event from the receipt logs.
+ * Fallback: if the event is missing (e.g. log delivery lag), reads
+ *           nextInvoiceId from the contract and subtracts 1 — the transaction
+ *           already succeeded so the invoice exists; we just recover the ID.
+ */
 export async function createInvoice(
   injected: Eip1193Provider,
   merchant: string,
@@ -67,7 +97,7 @@ export async function createInvoice(
   const tx = await contract.createInvoice(merchant, amountWei, orderRef);
   const receipt = await tx.wait();
 
-  // Recover invoiceId from the InvoiceCreated event in this receipt.
+  // --- Primary: recover invoiceId from the InvoiceCreated event -----------
   const iface = new quais.Interface(artifact.abi);
   for (const log of receipt.logs ?? []) {
     try {
@@ -79,7 +109,27 @@ export async function createInvoice(
       // not one of ours — skip
     }
   }
-  throw new Error("InvoiceCreated event not found in transaction receipt");
+
+  // --- Fallback: tx succeeded but event not in receipt (log delivery lag) --
+  // nextInvoiceId was post-incremented by the contract, so the new invoice is
+  // at nextInvoiceId - 1.
+  console.warn(
+    "[paymentRegistry] InvoiceCreated event not found in receipt logs — " +
+    "falling back to nextInvoiceId read."
+  );
+  try {
+    const readContract = getReadContract();
+    const nextId = (await readContract.nextInvoiceId()) as bigint;
+    if (nextId > BigInt(0)) {
+      return nextId - BigInt(1);
+    }
+  } catch (fallbackErr) {
+    console.error("[paymentRegistry] nextInvoiceId fallback failed:", fallbackErr);
+  }
+
+  throw new Error(
+    "createInvoice: could not determine invoiceId — event missing and nextInvoiceId fallback failed."
+  );
 }
 
 /** confirmPayment(invoiceId, payer) — called after independent verification (README flow step 6). */
@@ -92,6 +142,32 @@ export async function confirmPayment(
   const tx = await contract.confirmPayment(invoiceId, payer);
   const receipt = await tx.wait();
   return receipt.hash as string;
+}
+
+/**
+ * cancelInvoice(invoiceId) — marks the invoice Cancelled on-chain.
+ * Any caller is permitted at hackathon scope (contract is open-access).
+ * Returns the transaction hash.
+ */
+export async function cancelInvoice(
+  injected: Eip1193Provider,
+  invoiceId: bigint
+): Promise<string> {
+  const contract = await getWriteContract(injected);
+  const tx = await contract.cancelInvoice(invoiceId);
+  const receipt = await tx.wait();
+  return receipt.hash as string;
+}
+
+/**
+ * getStatus(invoiceId) — lightweight read-only status poll.
+ * Use this as a WSS fallback: if the WebSocket drops before PaymentConfirmed
+ * fires, poll this every N seconds until status !== Pending.
+ */
+export async function getStatus(invoiceId: bigint): Promise<InvoiceStatus> {
+  const c = getReadContract();
+  const raw = await c.getStatus(invoiceId);
+  return Number(raw) as InvoiceStatus;
 }
 
 /** getInvoice(invoiceId) read-back. */
