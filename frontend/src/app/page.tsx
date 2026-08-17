@@ -87,58 +87,116 @@ function GoldDivider({ className = "" }: { className?: string }) {
   );
 }
 
-/* ─── Storyset illustration placeholder (inline SVG) ─────── */
+/* ─── Animated hero illustration — satellites orbit the Q ─── */
+const ORBIT_NODES = [
+  { label: "QUAI", color: "#1B3A2D", textColor: "#F5F0E8", angle: 270, radius: 122, fontSize: 9 },
+  { label: "ETH",  color: "#2D5A40", textColor: "#F5F0E8", angle: 330, radius: 122, fontSize: 9 },
+  { label: "BTC",  color: "#2D5A40", textColor: "#F5F0E8", angle:  30, radius: 122, fontSize: 9 },
+  { label: "USDT", color: "#1B3A2D", textColor: "#F5F0E8", angle:  90, radius: 122, fontSize: 8 },
+  { label: "BNB",  color: "#2D5A40", textColor: "#F5F0E8", angle: 150, radius: 122, fontSize: 9 },
+  { label: "SOL",  color: "#B87333", textColor: "#F5F0E8", angle: 210, radius: 122, fontSize: 9 },
+];
+
 function IllustrationHero() {
+  const cx = 190; // center x of viewBox
+  const cy = 190; // center y of viewBox
+
   return (
-    /* Inline SVG representing a DeFi/crypto exchange illustration */
-    <svg
-      viewBox="0 0 480 380"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full"
-      role="img"
-      aria-label="QuaiForge platform illustration"
-    >
-      {/* Background circles */}
-      <circle cx="240" cy="190" r="160" fill="#1B3A2D" fillOpacity="0.06" />
-      <circle cx="240" cy="190" r="110" fill="#1B3A2D" fillOpacity="0.05" />
-      {/* Central platform node */}
-      <circle cx="240" cy="190" r="48" fill="#1B3A2D" />
-      <circle cx="240" cy="190" r="38" fill="#2D5A40" />
-      {/* Q logo text */}
-      <text x="232" y="200" fontSize="26" fontWeight="700" fill="#F5F0E8" fontFamily="serif">Q</text>
-      {/* Connection lines */}
-      <line x1="240" y1="142" x2="240" y2="80" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="288" y1="166" x2="340" y2="130" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="288" y1="214" x2="340" y2="250" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="240" y1="238" x2="240" y2="300" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="192" y1="214" x2="140" y2="250" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="192" y1="166" x2="140" y2="130" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      {/* Satellite nodes */}
-      <circle cx="240" cy="68" r="22" fill="#1B3A2D" />
-      <text x="233" y="74" fontSize="11" fill="#F5F0E8" fontFamily="monospace">QUAI</text>
-      <circle cx="355" cy="118" r="22" fill="#2D5A40" />
-      <text x="349" y="124" fontSize="10" fill="#F5F0E8" fontFamily="monospace">ETH</text>
-      <circle cx="355" cy="262" r="22" fill="#2D5A40" />
-      <text x="347" y="268" fontSize="10" fill="#F5F0E8" fontFamily="monospace">BTC</text>
-      <circle cx="240" cy="312" r="22" fill="#1B3A2D" />
-      <text x="233" y="318" fontSize="11" fill="#F5F0E8" fontFamily="monospace">USDT</text>
-      <circle cx="125" cy="262" r="22" fill="#2D5A40" />
-      <text x="118" y="268" fontSize="10" fill="#F5F0E8" fontFamily="monospace">BNB</text>
-      <circle cx="125" cy="118" r="22" fill="#2D5A40" />
-      <text x="116" y="124" fontSize="10" fill="#F5F0E8" fontFamily="monospace">SOL</text>
-      {/* Floating arrows indicating exchange */}
-      <path d="M220 155 L255 155" stroke="#00E676" strokeWidth="2" strokeLinecap="round" markerEnd="url(#arr)" />
-      <path d="M255 170 L220 170" stroke="#B87333" strokeWidth="2" strokeLinecap="round" markerEnd="url(#arr2)" />
-      <defs>
-        <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0 0 L6 3 L0 6 Z" fill="#00E676" />
-        </marker>
-        <marker id="arr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0 0 L6 3 L0 6 Z" fill="#B87333" />
-        </marker>
-      </defs>
-    </svg>
+    <div className="relative w-full h-full flex items-center justify-center select-none">
+      {/* Orbit ring track */}
+      <svg
+        viewBox="0 0 380 380"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="absolute inset-0 w-full h-full"
+        aria-hidden
+      >
+        {/* Dashed orbit track */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={122}
+          stroke="#1B3A2D"
+          strokeOpacity="0.18"
+          strokeWidth="1"
+          strokeDasharray="5 4"
+        />
+        {/* Outer glow ring */}
+        <circle cx={cx} cy={cy} r={155} stroke="#B87333" strokeOpacity="0.07" strokeWidth="1" />
+        {/* Inner fill rings */}
+        <circle cx={cx} cy={cy} r={58} fill="#1B3A2D" fillOpacity="0.08" />
+        {/* Central Q node */}
+        <circle cx={cx} cy={cy} r={46} fill="#1B3A2D" />
+        <circle cx={cx} cy={cy} r={36} fill="#2D5A40" />
+        <text
+          x={cx - 9}
+          y={cy + 11}
+          fontSize="28"
+          fontWeight="700"
+          fill="#F5F0E8"
+          fontFamily="Georgia, serif"
+        >
+          Q
+        </text>
+        {/* Exchange arrows — below the Q text, clear of the letter */}
+        <path d="M179 208 L201 208 M201 208 L195 202 M201 208 L195 214" stroke="#00E676" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M201 218 L179 218 M179 218 L185 212 M179 218 L185 224" stroke="#B87333" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+
+      {/* Orbiting satellite group — rotates the whole ring */}
+      <motion.div
+        className="absolute inset-0"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+        style={{ transformOrigin: "center center" }}
+      >
+        {ORBIT_NODES.map((node) => {
+          const rad = (node.angle * Math.PI) / 180;
+          // position as % of container — SVG viewBox is 380×380
+          const left = `${((cx + node.radius * Math.cos(rad)) / 380) * 100}%`;
+          const top  = `${((cy + node.radius * Math.sin(rad)) / 380) * 100}%`;
+          return (
+            <div
+              key={node.label}
+              className="absolute flex items-center justify-center rounded-full shadow-lg"
+              style={{
+                width: 44,
+                height: 44,
+                background: node.color,
+                left,
+                top,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              {/* Counter-rotate the label so text stays upright */}
+              <motion.span
+                className="text-[9px] font-mono font-bold leading-none"
+                style={{ color: node.textColor }}
+                animate={{ rotate: -360 }}
+                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+              >
+                {node.label}
+              </motion.span>
+            </div>
+          );
+        })}
+      </motion.div>
+
+      {/* Subtle pulsing glow behind center */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: 110,
+          height: 110,
+          background: "radial-gradient(circle, #2D5A4044 0%, transparent 70%)",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
+        animate={{ scale: [1, 1.18, 1], opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </div>
   );
 }
 
@@ -350,22 +408,57 @@ function HeroSection() {
             <div className="absolute inset-12 flex items-center justify-center">
               <IllustrationHero />
             </div>
-            {/* Floating badge */}
+
+            {/* ── Orbiting badge ring — same technique as satellite nodes ── */}
+            {/* SVG reference frame: viewBox 380×380, cx=190, cy=190.
+                The illustration sits inside inset-12 (48px each side) inside
+                max-w-[460px] square, so the illustration div is 460-96=364px.
+                We replicate the coordinate system at the outer container level
+                by using the full 460px square as reference: badge orbit radius
+                ~158 SVG units → (158/380)*100 ≈ 41.6% of 460px ≈ 191px. */}
             <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-6 right-6 rounded-2xl border border-green-deep/15 bg-cream shadow-card px-4 py-3"
+              className="absolute inset-0"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+              style={{ transformOrigin: "center center" }}
             >
-              <p className="text-xs uppercase tracking-wider text-green-deep/60" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Live TX</p>
-              <p className="text-sm font-semibold text-green-deep" style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>45 QUAI</p>
-            </motion.div>
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
-              className="absolute bottom-10 left-4 rounded-2xl border border-forge-primary/30 bg-cream shadow-card px-4 py-3"
-            >
-              <p className="text-xs uppercase tracking-wider text-warm-brown" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Confirmed ✓</p>
-              <p className="text-xs text-green-deep/60">On-chain record</p>
+              {/* Live TX badge — top-right quadrant (angle -45°) */}
+              <div
+                className="absolute"
+                style={{
+                  left: "79%",
+                  top: "21%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+                  className="rounded-2xl border border-green-deep/20 bg-cream shadow-card px-3 py-2 whitespace-nowrap"
+                >
+                  <p className="text-[10px] uppercase tracking-wider text-green-deep/60" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Live TX</p>
+                  <p className="text-sm font-semibold text-green-deep" style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>45 QUAI</p>
+                </motion.div>
+              </div>
+
+              {/* Confirmed badge — bottom-left quadrant (angle 135°) */}
+              <div
+                className="absolute"
+                style={{
+                  left: "21%",
+                  top: "79%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+                  className="rounded-2xl border border-forge-primary/30 bg-cream shadow-card px-3 py-2 whitespace-nowrap"
+                >
+                  <p className="text-[10px] uppercase tracking-wider text-warm-brown" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Confirmed ✓</p>
+                  <p className="text-[10px] text-green-deep/60">On-chain record</p>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
         </motion.div>
@@ -383,14 +476,20 @@ function FeaturesSection() {
     {
       title: "Instant Quai Swaps — fast and non-custodial",
       meta: "QuaiForge Protocol, 2025",
+      img: "/feature-swap.png",
+      alt: "Person swapping crypto coins on a phone",
     },
     {
       title: "How on-chain invoices transform merchant trust",
       meta: "Blockchain Weekly, 2025",
+      img: "/feature-invoice.png",
+      alt: "Merchant receiving a blockchain invoice on a tablet",
     },
     {
       title: "Building DeFi tools for emerging markets",
       meta: "Web3 Africa, 2024",
+      img: "/feature-defi.png",
+      alt: "People using crypto payments at an African market",
     },
   ];
 
@@ -406,14 +505,34 @@ function FeaturesSection() {
           {/* Title */}
           <SectionTitle>Features</SectionTitle>
 
+          {/* Subtext description */}
+          <motion.p
+            variants={fadeIn}
+            className="max-w-2xl text-center text-green-deep/70 text-lg -mt-8 mb-4 leading-relaxed"
+            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.2rem" }}
+          >
+            QuaiForge combines the instantaneous nature of off-chain payment verification with the absolute finality of the Quai Network blockchain. Accept multi-currency settlement via Blip seamlessly.
+          </motion.p>
+
           {/* 3-column article-style grid */}
-          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-gold-line/30">
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 md:divide-x divide-gold-line/30">
             {articles.map((a, i) => (
               <motion.article
                 key={i}
                 variants={fadeUp}
-                className="flex flex-col gap-4 px-6 py-8 md:px-8 md:py-0 first:pl-0 last:pr-0"
+                className="flex flex-col items-center gap-5 px-6 py-8 md:px-8 md:py-0 first:pl-0 last:pr-0 group"
               >
+                {/* Illustration */}
+                <div className="w-full overflow-hidden rounded-2xl border border-green-deep/8 shadow-card bg-cream-dark">
+                  <Image
+                    src={a.img}
+                    alt={a.alt}
+                    width={400}
+                    height={320}
+                    className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+
                 <h3
                   className="text-2xl text-green-deep leading-snug text-center italic"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 500, fontSize: "1.45rem" }}
@@ -430,6 +549,11 @@ function FeaturesSection() {
               </motion.article>
             ))}
           </div>
+
+          {/* Storyset attribution */}
+          <motion.p variants={fadeIn} className="text-[11px] text-green-deep/35 text-center" style={{ fontFamily: "'Cormorant SC', Georgia, serif", letterSpacing: "0.08em" }}>
+            Illustrations inspired by <a href="https://storyset.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-deep/60 transition-colors">Storyset</a>
+          </motion.p>
         </motion.div>
       </div>
     </section>
@@ -446,19 +570,22 @@ function HowItWorksSection() {
       type: "swap" as const,
       label: "Swap",
       description: "Token-to-token swaps with best-route aggregation across Quai Network shards.",
-      svgBg: "#2C4870",
+      img: "/focus-swap.png",
+      alt: "Fast token swap illustration",
     },
     {
       type: "liquidity" as const,
       label: "Liquidity",
       description: "Provide liquidity in concentrated positions and earn fee revenue on every trade.",
-      svgBg: "#1B3A2D",
+      img: "/focus-liquidity.png",
+      alt: "Liquidity provider investment illustration",
     },
     {
       type: "bridge" as const,
       label: "Bridge",
       description: "Native cross-shard bridging with on-chain receipts and dual confirmation.",
-      svgBg: "#8A4A22",
+      img: "/focus-bridge.png",
+      alt: "Cross-shard network bridge illustration",
     },
   ];
 
@@ -491,16 +618,17 @@ function HowItWorksSection() {
               <motion.div
                 key={f.label}
                 variants={fadeUp}
-                className="flex flex-col items-center gap-4"
+                className="flex flex-col items-center gap-4 group"
               >
                 {/* Arch image */}
-                <ArchFrame className="w-full max-w-[220px] aspect-[4/5]">
-                  <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={{ background: `linear-gradient(160deg, ${f.svgBg} 0%, #0a1a12 100%)` }}
-                  >
-                    <FeatureIllustration type={f.type} />
-                  </div>
+                <ArchFrame className="w-full max-w-[220px] aspect-[4/5] overflow-hidden rounded-t-full border border-green-deep/8 shadow-card bg-cream">
+                  <Image
+                    src={f.img}
+                    alt={f.alt}
+                    width={220}
+                    height={275}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 </ArchFrame>
 
                 <h3
@@ -655,6 +783,79 @@ function AboutSection() {
   );
 }
 
+/* ── Background Illustrations ── */
+function BuildathonIllustration() {
+  return (
+    <svg viewBox="0 0 160 160" fill="none" className="w-full h-full max-w-[130px] p-2" role="img" aria-label="Buildathon illustration">
+      <circle cx="80" cy="80" r="60" fill="#1B3A2D" fillOpacity="0.06" />
+      {/* Laptop base and screen */}
+      <rect x="35" y="65" width="90" height="55" rx="4" fill="#1B3A2D" />
+      <rect x="40" y="70" width="80" height="45" rx="2" fill="#F5F0E8" />
+      <rect x="25" y="115" width="110" height="8" rx="2" fill="#8B4513" />
+      {/* Code lines on screen */}
+      <rect x="48" y="78" width="40" height="4" rx="2" fill="#1B3A2D" fillOpacity="0.6" />
+      <rect x="48" y="86" width="60" height="4" rx="2" fill="#B87333" />
+      <rect x="48" y="94" width="30" height="4" rx="2" fill="#00E676" />
+      {/* Graduation cap floating */}
+      <path d="M80 30 L110 42 L80 54 L50 42 Z" fill="#8B4513" />
+      <rect x="74" y="48" width="12" height="10" fill="#1B3A2D" />
+      <path d="M102 45 L102 62 C102 65 96 68 90 68" stroke="#B87333" strokeWidth="1.5" fill="none" />
+      <circle cx="90" cy="68" r="2.5" fill="#B87333" />
+      {/* Sparkles */}
+      <circle cx="35" cy="40" r="3" fill="#B87333" />
+      <circle cx="125" cy="55" r="2" fill="#1B3A2D" />
+      <circle cx="130" cy="100" r="3.5" fill="#B87333" />
+    </svg>
+  );
+}
+
+function QuaiNetworkIllustration() {
+  return (
+    <svg viewBox="0 0 160 160" fill="none" className="w-full h-full max-w-[130px] p-2" role="img" aria-label="Quai Network illustration">
+      <circle cx="80" cy="80" r="60" fill="#1B3A2D" fillOpacity="0.06" />
+      {/* Shard cubes / connected server nodes */}
+      {/* Central Node */}
+      <rect x="65" y="65" width="30" height="30" rx="6" fill="#8B4513" />
+      <circle cx="80" cy="80" r="6" fill="#F5F0E8" />
+      {/* Satellite Nodes */}
+      <rect x="30" y="30" width="22" height="22" rx="4" fill="#1B3A2D" />
+      <circle cx="41" cy="41" r="3.5" fill="#B87333" />
+      <rect x="108" y="30" width="22" height="22" rx="4" fill="#1B3A2D" />
+      <circle cx="119" cy="41" r="3.5" fill="#B87333" />
+      <rect x="30" y="108" width="22" height="22" rx="4" fill="#1B3A2D" />
+      <circle cx="41" cy="119" r="3.5" fill="#B87333" />
+      <rect x="108" y="108" width="22" height="22" rx="4" fill="#1B3A2D" />
+      <circle cx="119" cy="119" r="3.5" fill="#B87333" />
+      {/* Connection paths */}
+      <path d="M52 41 L65 70" stroke="#B87333" strokeWidth="1.5" strokeDasharray="3 3" />
+      <path d="M108 41 L95 70" stroke="#B87333" strokeWidth="1.5" strokeDasharray="3 3" />
+      <path d="M52 119 L65 90" stroke="#B87333" strokeWidth="1.5" strokeDasharray="3 3" />
+      <path d="M108 119 L95 90" stroke="#B87333" strokeWidth="1.5" strokeDasharray="3 3" />
+      <path d="M41 52 L41 108" stroke="#1B3A2D" strokeOpacity="0.2" strokeWidth="1" />
+      <path d="M119 52 L119 108" stroke="#1B3A2D" strokeOpacity="0.2" strokeWidth="1" />
+    </svg>
+  );
+}
+
+function OpenSourceIllustration() {
+  return (
+    <svg viewBox="0 0 160 160" fill="none" className="w-full h-full max-w-[130px] p-2" role="img" aria-label="Open Source illustration">
+      <circle cx="80" cy="80" r="60" fill="#1B3A2D" fillOpacity="0.06" />
+      {/* Folder base */}
+      <path d="M30 45 C30 41.7 32.7 39 36 39 L65 39 L78 52 L124 52 C127.3 52 130 54.7 130 58 L130 115 C130 118.3 127.3 121 124 121 L36 121 C32.7 121 30 118.3 30 115 Z" fill="#1B3A2D" />
+      {/* Paper coming out */}
+      <rect x="44" y="55" width="72" height="56" rx="4" fill="#F5F0E8" />
+      {/* Code brackets < > */}
+      <path d="M68 76 L58 83 L68 90" stroke="#8B4513" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M92 76 L102 83 L92 90" stroke="#8B4513" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M84 73 L76 93" stroke="#B87333" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Gear */}
+      <circle cx="118" cy="108" r="14" fill="#8B4513" />
+      <circle cx="118" cy="108" r="6" fill="#F5F0E8" />
+    </svg>
+  );
+}
+
 /* ── Background / Stats ───────────────────────────────────── */
 function BackgroundSection() {
   const ref = useRef(null);
@@ -662,19 +863,19 @@ function BackgroundSection() {
 
   const items = [
     {
-      icon: GraduationCap,
+      illustration: BuildathonIllustration,
       label: "Buildathon Origin",
       sublabel: "QUAI × BLIP",
       detail: "Jos, Nigeria — 2025",
     },
     {
-      icon: Building2,
+      illustration: QuaiNetworkIllustration,
       label: "Quai Network",
       sublabel: "Orchard Testnet",
       detail: "January – Present 2025",
     },
     {
-      icon: Settings,
+      illustration: OpenSourceIllustration,
       label: "Open Source",
       sublabel: "MIT License",
       detail: "GitHub — QuaiForge",
@@ -700,16 +901,16 @@ function BackgroundSection() {
 
           <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-12">
             {items.map((item) => {
-              const Icon = item.icon;
+              const Illustration = item.illustration;
               return (
                 <motion.div
                   key={item.label}
                   variants={fadeUp}
-                  className="flex flex-col items-center gap-4 text-center"
+                  className="flex flex-col items-center gap-4 text-center group"
                 >
-                  {/* Icon in a circle — matches Figma warm-brown circles */}
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-warm-brown shadow-[0_4px_16px_rgba(139,69,19,0.25)]">
-                    <Icon size={32} strokeWidth={1.5} className="text-cream" />
+                  {/* Storyset-style vector illustration container */}
+                  <div className="w-full max-w-[180px] aspect-square flex items-center justify-center bg-cream rounded-2xl border border-green-deep/8 shadow-card overflow-hidden transition-transform duration-500 group-hover:scale-105">
+                    <Illustration />
                   </div>
 
                   <h3
