@@ -4,12 +4,12 @@
   "description": "QuaiForge — PaymentRegistry smart contract (Pay with Blip, Quai Orchard testnet)",
   "main": "index.js",
   "scripts": {
-    "compile":          "hardhat compile",
-    "test":             "hardhat test test/PaymentRegistry.test.js --network hardhat",
-    "deploy":           "hardhat run scripts/deploy-payment-registry.js --network orchard",
-    "deploy:local":     "hardhat run scripts/deploy-payment-registry.js --network localhost",
-    "node":             "hardhat node",
-    "clean":            "hardhat clean",
+    "compile": "hardhat compile",
+    "test": "hardhat test test/PaymentRegistry.test.js --network hardhat",
+    "deploy": "hardhat run scripts/deploy-payment-registry.js --network orchard",
+    "deploy:local": "hardhat run scripts/deploy-payment-registry.js --network localhost",
+    "node": "hardhat node",
+    "clean": "hardhat clean",
     "export-artifacts": "node scripts/export-artifacts.js"
   },
   "keywords": [],
@@ -22,6 +22,7 @@
     "chai": "^4.4.1",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.4",
-    "hardhat": "^2.22.17"
+    "hardhat": "^2.22.17",
+    "quais": "^1.0.0-alpha.56"
   }
 }
