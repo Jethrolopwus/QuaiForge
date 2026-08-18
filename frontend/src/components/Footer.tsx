@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView,Variants } from "framer-motion";
 import { useRef, useState } from "react";
 import {
   Github,
@@ -12,7 +12,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-const fadeUp = {
+const fadeUp : Variants = {
   hidden: { opacity: 0, y: 24 },
   visible: {
     opacity: 1,
@@ -21,7 +21,7 @@ const fadeUp = {
   },
 };
 
-const stagger = {
+const stagger : Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,

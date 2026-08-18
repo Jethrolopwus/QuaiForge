@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, Variants } from "framer-motion";
 import { useRef } from "react";
 import { HeroSection } from "@/components/HeroSection";
 import {
@@ -20,7 +20,7 @@ import {
 import { Footer } from "@/components/Footer";
 
 /* ─── Shared animation variants ──────────────────────────── */
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 32, scale: 0.98 },
   visible: {
     opacity: 1,
@@ -30,7 +30,7 @@ const fadeUp = {
   },
 };
 
-const fadeIn = {
+const fadeIn: Variants = {
   hidden: { opacity: 0, y: 18 },
   visible: {
     opacity: 1,
@@ -39,7 +39,7 @@ const fadeIn = {
   },
 };
 
-const stagger = {
+const stagger: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -47,7 +47,7 @@ const stagger = {
   },
 };
 
-const staggerFast = {
+const staggerFast: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -88,118 +88,6 @@ function GoldDivider({ className = "" }: { className?: string }) {
   );
 }
 
-/* ─── Animated hero illustration — satellites orbit the Q ─── */
-const ORBIT_NODES = [
-  { label: "QUAI", color: "#1B3A2D", textColor: "#F5F0E8", angle: 270, radius: 122, fontSize: 9 },
-  { label: "ETH",  color: "#2D5A40", textColor: "#F5F0E8", angle: 330, radius: 122, fontSize: 9 },
-  { label: "BTC",  color: "#2D5A40", textColor: "#F5F0E8", angle:  30, radius: 122, fontSize: 9 },
-  { label: "USDT", color: "#1B3A2D", textColor: "#F5F0E8", angle:  90, radius: 122, fontSize: 8 },
-  { label: "BNB",  color: "#2D5A40", textColor: "#F5F0E8", angle: 150, radius: 122, fontSize: 9 },
-  { label: "SOL",  color: "#B87333", textColor: "#F5F0E8", angle: 210, radius: 122, fontSize: 9 },
-];
-
-function IllustrationHero() {
-  const cx = 190; // center x of viewBox
-  const cy = 190; // center y of viewBox
-
-  return (
-    <div className="relative w-full h-full flex items-center justify-center select-none">
-      {/* Orbit ring track */}
-      <svg
-        viewBox="0 0 380 380"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="absolute inset-0 w-full h-full"
-        aria-hidden
-      >
-        {/* Dashed orbit track */}
-        <circle
-          cx={cx}
-          cy={cy}
-          r={122}
-          stroke="#1B3A2D"
-          strokeOpacity="0.18"
-          strokeWidth="1"
-          strokeDasharray="5 4"
-        />
-        {/* Outer glow ring */}
-        <circle cx={cx} cy={cy} r={155} stroke="#B87333" strokeOpacity="0.07" strokeWidth="1" />
-        {/* Inner fill rings */}
-        <circle cx={cx} cy={cy} r={58} fill="#1B3A2D" fillOpacity="0.08" />
-        {/* Central Q node */}
-        <circle cx={cx} cy={cy} r={46} fill="#1B3A2D" />
-        <circle cx={cx} cy={cy} r={36} fill="#2D5A40" />
-        <text
-          x={cx - 9}
-          y={cy + 11}
-          fontSize="28"
-          fontWeight="700"
-          fill="#F5F0E8"
-          fontFamily="Georgia, serif"
-        >
-          Q
-        </text>
-        {/* Exchange arrows — below the Q text, clear of the letter */}
-        <path d="M179 208 L201 208 M201 208 L195 202 M201 208 L195 214" stroke="#00E676" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M201 218 L179 218 M179 218 L185 212 M179 218 L185 224" stroke="#B87333" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-
-      {/* Orbiting satellite group — rotates the whole ring */}
-      <motion.div
-        className="absolute inset-0"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-        style={{ transformOrigin: "center center" }}
-      >
-        {ORBIT_NODES.map((node) => {
-          const rad = (node.angle * Math.PI) / 180;
-          // position as % of container — SVG viewBox is 380×380
-          const left = `${((cx + node.radius * Math.cos(rad)) / 380) * 100}%`;
-          const top  = `${((cy + node.radius * Math.sin(rad)) / 380) * 100}%`;
-          return (
-            <div
-              key={node.label}
-              className="absolute flex items-center justify-center rounded-full shadow-lg"
-              style={{
-                width: 44,
-                height: 44,
-                background: node.color,
-                left,
-                top,
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              {/* Counter-rotate the label so text stays upright */}
-              <motion.span
-                className="text-[9px] font-mono font-bold leading-none"
-                style={{ color: node.textColor }}
-                animate={{ rotate: -360 }}
-                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-              >
-                {node.label}
-              </motion.span>
-            </div>
-          );
-        })}
-      </motion.div>
-
-      {/* Subtle pulsing glow behind center */}
-      <motion.div
-        className="absolute rounded-full"
-        style={{
-          width: 110,
-          height: 110,
-          background: "radial-gradient(circle, #2D5A4044 0%, transparent 70%)",
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-        }}
-        animate={{ scale: [1, 1.18, 1], opacity: [0.6, 1, 0.6] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-      />
-    </div>
-  );
-}
 
 /* ─── Stats illustration (storyset-style) ─────────────── */
 function IllustrationStats() {
@@ -291,182 +179,6 @@ export default function Home() {
 /*  SECTIONS                                                   */
 /* ══════════════════════════════════════════════════════════ */
 
-/* ── Hero ─────────────────────────────────────────────────── */
-function HeroSection() {
-  return (
-    <section id="home" className="relative min-h-screen bg-cream flex items-center pt-20">
-      {/* Subtle decorative circles */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-32 right-10 h-64 w-64 rounded-full bg-green-deep/4 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute bottom-20 left-10 h-48 w-48 rounded-full bg-gold-line/10 blur-2xl"
-      />
-
-      <div className="mx-auto max-w-7xl w-full px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        {/* Left copy */}
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col gap-6"
-        >
-          {/* Badge */}
-          <motion.div variants={fadeIn}>
-            
-            
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            variants={fadeUp}
-            className="text-5xl font-normal leading-[1.08] tracking-tight text-green-deep sm:text-6xl lg:text-7xl"
-            style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
-          >
-            The Merchant
-            <br />
-            <span className="italic" style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>
-              Checkout for{" "}
-            </span>
-            <span className="text-warm-brown">Quai</span>
-          </motion.h1>
-
-          {/* Sub */}
-          <motion.p
-            variants={fadeIn}
-            className="max-w-md text-lg leading-relaxed text-green-deep/70"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.15rem" }}
-          >
-            One button. No code.{" "}
-            <em>Real Quai payments.</em> A drop-in &ldquo;Pay with Blip&rdquo;
-            checkout widget any merchant can embed — invoices recorded on-chain,
-            payments wallet-to-wallet.
-          </motion.p>
-
-          {/* CTAs */}
-          <motion.div variants={fadeIn} className="flex flex-wrap gap-4 pt-2">
-            <Link
-              href="/widget-demo"
-              className="group inline-flex items-center gap-2 rounded-full bg-green-deep px-7 py-3.5 font-semibold text-cream shadow-card transition-all hover:bg-green-mid hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-deep"
-              style={{ fontFamily: "'Cormorant SC', Georgia, serif", letterSpacing: "0.06em" }}
-            >
-              Open Merchant Demo
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </Link>
-            <a
-              href="https://orchard.quaiscan.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-green-deep/30 px-7 py-3.5 text-green-deep transition-all hover:border-green-deep hover:bg-cream-dark focus:outline-none focus:ring-2 focus:ring-green-deep"
-              style={{ fontFamily: "'Cormorant SC', Georgia, serif", letterSpacing: "0.06em" }}
-            >
-              Orchard Explorer
-            </a>
-          </motion.div>
-
-          {/* Stats row */}
-          <motion.div
-            variants={staggerFast}
-            className="grid grid-cols-3 gap-6 pt-8 border-t border-green-deep/12"
-          >
-            {[
-              { value: "$2.4M+", label: "Volume Processed" },
-              { value: "12,000+", label: "Transactions" },
-              { value: "99.9%", label: "Uptime" },
-            ].map((s) => (
-              <motion.div key={s.label} variants={fadeIn} className="flex flex-col gap-1">
-                <span
-                  className="text-3xl font-normal text-green-deep"
-                  style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
-                >
-                  {s.value}
-                </span>
-                <span
-                  className="text-xs uppercase tracking-widest text-green-deep/55"
-                  style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}
-                >
-                  {s.label}
-                </span>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-
-        {/* Right illustration */}
-        <motion.div
-          initial={{ opacity: 0, x: 40, scale: 0.96 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative flex items-center justify-center"
-        >
-          <div className="relative w-full max-w-[460px] aspect-square">
-            {/* Outer rings */}
-            <div className="absolute inset-0 rounded-full border border-green-deep/8 animate-[spin_20s_linear_infinite]" />
-            <div className="absolute inset-8 rounded-full border border-gold-line/15" />
-            {/* Main illustration */}
-            <div className="absolute inset-12 flex items-center justify-center">
-              <IllustrationHero />
-            </div>
-
-            {/* ── Orbiting badge ring — same technique as satellite nodes ── */}
-            {/* SVG reference frame: viewBox 380×380, cx=190, cy=190.
-                The illustration sits inside inset-12 (48px each side) inside
-                max-w-[460px] square, so the illustration div is 460-96=364px.
-                We replicate the coordinate system at the outer container level
-                by using the full 460px square as reference: badge orbit radius
-                ~158 SVG units → (158/380)*100 ≈ 41.6% of 460px ≈ 191px. */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-              style={{ transformOrigin: "center center" }}
-            >
-              {/* Live TX badge — top-right quadrant (angle -45°) */}
-              <div
-                className="absolute"
-                style={{
-                  left: "79%",
-                  top: "21%",
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                <motion.div
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-                  className="rounded-2xl border border-green-deep/20 bg-cream shadow-card px-3 py-2 whitespace-nowrap"
-                >
-                  <p className="text-[10px] uppercase tracking-wider text-green-deep/60" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Live TX</p>
-                  <p className="text-sm font-semibold text-green-deep" style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>45 QUAI</p>
-                </motion.div>
-              </div>
-
-              {/* Confirmed badge — bottom-left quadrant (angle 135°) */}
-              <div
-                className="absolute"
-                style={{
-                  left: "21%",
-                  top: "79%",
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                <motion.div
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-                  className="rounded-2xl border border-forge-primary/30 bg-cream shadow-card px-3 py-2 whitespace-nowrap"
-                >
-                  <p className="text-[10px] uppercase tracking-wider text-warm-brown" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Confirmed ✓</p>
-                  <p className="text-[10px] text-green-deep/60">On-chain record</p>
-                </motion.div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
 
 /* ── Features ─────────────────────────────────────────────── */
 function FeaturesSection() {
@@ -550,11 +262,6 @@ function FeaturesSection() {
               </motion.article>
             ))}
           </div>
-
-          {/* Storyset attribution */}
-          <motion.p variants={fadeIn} className="text-[11px] text-green-deep/35 text-center" style={{ fontFamily: "'Cormorant SC', Georgia, serif", letterSpacing: "0.08em" }}>
-            Illustrations inspired by <a href="https://storyset.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-deep/60 transition-colors">Storyset</a>
-          </motion.p>
         </motion.div>
       </div>
     </section>
@@ -659,6 +366,12 @@ function AboutSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" });
 
+  const aboutImages = [
+    "https://pbs.twimg.com/profile_images/1932754865488355329/6STPvmBO_400x400.jpg",
+    "https://pbs.twimg.com/media/HJ-a63SWgAAyxvD?format=jpg&name=large",
+    "https://pbs.twimg.com/profile_images/2028447934153707520/z1ryqdKd_400x400.jpg",
+  ];
+
   return (
     <section id="about" ref={ref} className="bg-cream section-pad">
       <div className="mx-auto max-w-6xl px-6">
@@ -699,7 +412,7 @@ function AboutSection() {
             >
               Built for the QUAI × BLIP Buildathon in Jos, QuaiForge is a
               drop-in merchant checkout widget that brings real, on-chain Quai
-              payments to any website. I am passionate about DeFi infrastructure,
+              payments to any website. We are passionate about DeFi infrastructure,
               cross-shard technology, and making blockchain payments accessible
               to everyday merchants in emerging markets.
             </motion.p>
@@ -709,7 +422,7 @@ function AboutSection() {
               className="text-lg leading-relaxed text-green-deep/75"
               style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.15rem", lineHeight: "1.75" }}
             >
-              My goal is to make QuaiForge the simplest way for any merchant to
+              Our goal is to make QuaiForge the simplest way for any merchant to
               accept crypto — no custodian, no intermediaries, just a single
               button and a wallet-to-wallet transfer recorded on Orchard.
             </motion.p>
@@ -735,46 +448,27 @@ function AboutSection() {
                 className="w-full h-full relative flex items-center justify-center"
                 style={{ background: "linear-gradient(160deg, #2D5A40 0%, #1B3A2D 100%)" }}
               >
-                {/* Storyset-style person illustration (inline SVG) */}
-                <svg viewBox="0 0 300 380" fill="none" className="w-full h-full p-8" role="img" aria-label="Developer working illustration">
-                  {/* Body */}
-                  <ellipse cx="150" cy="320" rx="70" ry="20" fill="#0a1a12" fillOpacity="0.4" />
-                  {/* Legs */}
-                  <rect x="125" y="260" width="20" height="70" rx="10" fill="#8B7355" />
-                  <rect x="155" y="260" width="20" height="70" rx="10" fill="#8B7355" />
-                  {/* Torso */}
-                  <rect x="110" y="160" width="80" height="110" rx="20" fill="#E8D5B0" />
-                  {/* Arms */}
-                  <rect x="75" y="165" width="42" height="18" rx="9" fill="#D4B896" transform="rotate(20 75 165)" />
-                  <rect x="185" y="165" width="42" height="18" rx="9" fill="#D4B896" transform="rotate(-20 185 165)" />
-                  {/* Laptop */}
-                  <rect x="90" y="210" width="120" height="70" rx="8" fill="#2D2D2D" />
-                  <rect x="95" y="215" width="110" height="60" rx="5" fill="#1a1a2e" />
-                  {/* Code lines on screen */}
-                  <rect x="100" y="222" width="60" height="4" rx="2" fill="#00E676" fillOpacity="0.7" />
-                  <rect x="100" y="232" width="80" height="4" rx="2" fill="#B87333" fillOpacity="0.7" />
-                  <rect x="100" y="242" width="50" height="4" rx="2" fill="#00E676" fillOpacity="0.5" />
-                  <rect x="100" y="252" width="70" height="4" rx="2" fill="#F5F0E8" fillOpacity="0.3" />
-                  {/* Head */}
-                  <circle cx="150" cy="130" r="42" fill="#D4B896" />
-                  {/* Hair */}
-                  <ellipse cx="150" cy="95" rx="42" ry="20" fill="#2D1B0E" />
-                  {/* Eyes */}
-                  <ellipse cx="138" cy="128" rx="5" ry="6" fill="#2D1B0E" />
-                  <ellipse cx="162" cy="128" rx="5" ry="6" fill="#2D1B0E" />
-                  <circle cx="139" cy="127" r="2" fill="white" />
-                  <circle cx="163" cy="127" r="2" fill="white" />
-                  {/* Smile */}
-                  <path d="M140 143 Q150 152 160 143" stroke="#2D1B0E" strokeWidth="2" fill="none" strokeLinecap="round" />
-                  {/* Floating QUAI badge */}
-                  <rect x="20" y="40" width="80" height="36" rx="12" fill="#F5F0E8" />
-                  <text x="29" y="55" fontSize="9" fill="#1B3A2D" fontFamily="monospace" fontWeight="bold">QUAI</text>
-                  <text x="29" y="69" fontSize="8" fill="#B87333" fontFamily="monospace">+ 45.00</text>
-                  {/* Floating check badge */}
-                  <rect x="200" y="60" width="80" height="36" rx="12" fill="#00E676" fillOpacity="0.9" />
-                  <text x="210" y="75" fontSize="9" fill="#060F0F" fontFamily="monospace" fontWeight="bold">Confirmed</text>
-                  <text x="215" y="88" fontSize="8" fill="#060F0F" fontFamily="monospace">on-chain ✓</text>
-                </svg>
+                {/* Three circular merchant photos, offset cluster */}
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <img
+                    src={aboutImages[0]}
+                    alt="Merchant photo 1"
+                    className="absolute w-40 h-40 rounded-full object-cover border-4 border-cream shadow-xl"
+                    style={{ top: "20%", left: "26%", transform: "translate(-50%, -50%)" }}
+                  />
+                  <img
+                    src={aboutImages[1]}
+                    alt="Merchant photo 2"
+                    className="absolute w-40 h-40 rounded-full object-cover border-4 border-cream shadow-xl"
+                    style={{ top: "56%", left: "72%", transform: "translate(-50%, -50%)" }}
+                  />
+                  <img
+                    src={aboutImages[2]}
+                    alt="Merchant photo 3"
+                    className="absolute w-40 h-40 rounded-full object-cover border-4 border-cream shadow-xl"
+                    style={{ top: "86%", left: "18%", transform: "translate(-50%, -50%)" }}
+                  />
+                </div>
               </div>
             </ArchFrame>
           </motion.div>
@@ -783,7 +477,6 @@ function AboutSection() {
     </section>
   );
 }
-
 /* ── Background Illustrations ── */
 function BuildathonIllustration() {
   return (
@@ -964,10 +657,10 @@ function TestimonialsSection() {
       role: "Social Media Influencer",
     },
     {
-      quote: "Add your own one-liner testimonial",
-      body: "Boost your product and service's credibility by adding testimonials from your clients. People love recommendations so feedback from others who've tried it is invaluable.",
-      author: "Name",
-      role: "Industry or Job Title",
+      quote: "Payments that just work, on-chain",
+      body: "We were skeptical about crypto checkout slowing customers down, but QuaiForge's flow is faster than our old card processor. Settlement lands in our wallet the moment the block confirms — no waiting on a payment gateway.",
+      author: "Daniel T.",
+      role: "Plateau Leatherworks, Merchant",
     },
   ];
 

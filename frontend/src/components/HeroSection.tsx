@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion,Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useWallet } from "@/hooks/useWallet";
 
 /* ─── Animation variants (mirrors page.tsx) ─────────────── */
-const fadeUp = {
+const fadeUp:Variants = {
   hidden: { opacity: 0, y: 32, scale: 0.98 },
   visible: {
     opacity: 1,
@@ -17,7 +17,7 @@ const fadeUp = {
   },
 };
 
-const fadeIn = {
+const fadeIn: Variants  = {
   hidden: { opacity: 0, y: 18 },
   visible: {
     opacity: 1,
@@ -26,7 +26,7 @@ const fadeIn = {
   },
 };
 
-const stagger = {
+const stagger: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -34,7 +34,7 @@ const stagger = {
   },
 };
 
-const staggerFast = {
+const staggerFast: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -42,59 +42,121 @@ const staggerFast = {
   },
 };
 
+
+const ORBIT_NODES = [
+  { label: "QUAI", color: "#1B3A2D", textColor: "#F5F0E8", angle: 270, radius: 122, fontSize: 9 },
+  { label: "ETH", color: "#2D5A40", textColor: "#F5F0E8", angle: 330, radius: 122, fontSize: 9 },
+  { label: "BTC", color: "#2D5A40", textColor: "#F5F0E8", angle: 30, radius: 122, fontSize: 9 },
+  { label: "USDT", color: "#1B3A2D", textColor: "#F5F0E8", angle: 90, radius: 122, fontSize: 8 },
+  { label: "BNB", color: "#2D5A40", textColor: "#F5F0E8", angle: 150, radius: 122, fontSize: 9 },
+  { label: "SOL", color: "#B87333", textColor: "#F5F0E8", angle: 210, radius: 122, fontSize: 9 },
+];
+
+
 /* ─── Inline SVG illustration ────────────────────────────── */
 function IllustrationHero() {
+  const cx = 190; // center x of viewBox
+  const cy = 190; // center y of viewBox
+
   return (
-    <svg
-      viewBox="0 0 480 380"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full"
-      role="img"
-      aria-label="QuaiForge platform illustration"
-    >
-      {/* Background circles */}
-      <circle cx="240" cy="190" r="160" fill="#1B3A2D" fillOpacity="0.06" />
-      <circle cx="240" cy="190" r="110" fill="#1B3A2D" fillOpacity="0.05" />
-      {/* Central platform node */}
-      <circle cx="240" cy="190" r="48" fill="#1B3A2D" />
-      <circle cx="240" cy="190" r="38" fill="#2D5A40" />
-      {/* Q logo text */}
-      <text x="232" y="200" fontSize="26" fontWeight="700" fill="#F5F0E8" fontFamily="serif">Q</text>
-      {/* Connection lines */}
-      <line x1="240" y1="142" x2="240" y2="80" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="288" y1="166" x2="340" y2="130" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="288" y1="214" x2="340" y2="250" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="240" y1="238" x2="240" y2="300" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="192" y1="214" x2="140" y2="250" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      <line x1="192" y1="166" x2="140" y2="130" stroke="#B87333" strokeWidth="1.5" strokeDasharray="4 3" />
-      {/* Satellite nodes */}
-      <circle cx="240" cy="68" r="22" fill="#1B3A2D" />
-      <text x="233" y="74" fontSize="11" fill="#F5F0E8" fontFamily="monospace">QUAI</text>
-      <circle cx="355" cy="118" r="22" fill="#2D5A40" />
-      <text x="349" y="124" fontSize="10" fill="#F5F0E8" fontFamily="monospace">ETH</text>
-      <circle cx="355" cy="262" r="22" fill="#2D5A40" />
-      <text x="347" y="268" fontSize="10" fill="#F5F0E8" fontFamily="monospace">BTC</text>
-      <circle cx="240" cy="312" r="22" fill="#1B3A2D" />
-      <text x="233" y="318" fontSize="11" fill="#F5F0E8" fontFamily="monospace">USDT</text>
-      <circle cx="125" cy="262" r="22" fill="#2D5A40" />
-      <text x="118" y="268" fontSize="10" fill="#F5F0E8" fontFamily="monospace">BNB</text>
-      <circle cx="125" cy="118" r="22" fill="#2D5A40" />
-      <text x="116" y="124" fontSize="10" fill="#F5F0E8" fontFamily="monospace">SOL</text>
-      {/* Floating arrows indicating exchange */}
-      <path d="M220 155 L255 155" stroke="#00E676" strokeWidth="2" strokeLinecap="round" markerEnd="url(#arr)" />
-      <path d="M255 170 L220 170" stroke="#B87333" strokeWidth="2" strokeLinecap="round" markerEnd="url(#arr2)" />
-      <defs>
-        <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0 0 L6 3 L0 6 Z" fill="#00E676" />
-        </marker>
-        <marker id="arr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0 0 L6 3 L0 6 Z" fill="#B87333" />
-        </marker>
-      </defs>
-    </svg>
+    <div className="relative w-full h-full flex items-center justify-center select-none">
+      {/* Orbit ring track */}
+      <svg
+        viewBox="0 0 380 380"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="absolute inset-0 w-full h-full"
+        aria-hidden
+      >
+        {/* Dashed orbit track */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={122}
+          stroke="#1B3A2D"
+          strokeOpacity="0.18"
+          strokeWidth="1"
+          strokeDasharray="5 4"
+        />
+        {/* Outer glow ring */}
+        <circle cx={cx} cy={cy} r={155} stroke="#B87333" strokeOpacity="0.07" strokeWidth="1" />
+        {/* Inner fill rings */}
+        <circle cx={cx} cy={cy} r={58} fill="#1B3A2D" fillOpacity="0.08" />
+        {/* Central Q node */}
+        <circle cx={cx} cy={cy} r={46} fill="#1B3A2D" />
+        <circle cx={cx} cy={cy} r={36} fill="#2D5A40" />
+        <text
+          x={cx - 9}
+          y={cy + 11}
+          fontSize="28"
+          fontWeight="700"
+          fill="#F5F0E8"
+          fontFamily="Georgia, serif"
+        >
+          Q
+        </text>
+        {/* Exchange arrows — below the Q text, clear of the letter */}
+        <path d="M179 208 L201 208 M201 208 L195 202 M201 208 L195 214" stroke="#00E676" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M201 218 L179 218 M179 218 L185 212 M179 218 L185 224" stroke="#B87333" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+
+      {/* Orbiting satellite group — rotates the whole ring */}
+      <motion.div
+        className="absolute inset-0"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+        style={{ transformOrigin: "center center" }}
+      >
+        {ORBIT_NODES.map((node) => {
+          const rad = (node.angle * Math.PI) / 180;
+          // position as % of container — SVG viewBox is 380×380
+          const left = `${((cx + node.radius * Math.cos(rad)) / 380) * 100}%`;
+          const top = `${((cy + node.radius * Math.sin(rad)) / 380) * 100}%`;
+          return (
+            <div
+              key={node.label}
+              className="absolute flex items-center justify-center rounded-full shadow-lg"
+              style={{
+                width: 44,
+                height: 44,
+                background: node.color,
+                left,
+                top,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              {/* Counter-rotate the label so text stays upright */}
+              <motion.span
+                className="text-[9px] font-mono font-bold leading-none"
+                style={{ color: node.textColor }}
+                animate={{ rotate: -360 }}
+                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+              >
+                {node.label}
+              </motion.span>
+            </div>
+          );
+        })}
+      </motion.div>
+
+      {/* Subtle pulsing glow behind center */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: 110,
+          height: 110,
+          background: "radial-gradient(circle, #2D5A4044 0%, transparent 70%)",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
+        animate={{ scale: [1, 1.18, 1], opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </div>
   );
 }
+
 
 /* ─── Hero Section ───────────────────────────────────────── */
 export function HeroSection() {
@@ -134,8 +196,8 @@ export function HeroSection() {
         >
           {/* Badge */}
           <motion.div variants={fadeIn}>
-            
-            
+
+
           </motion.div>
 
           {/* Headline */}
@@ -230,20 +292,48 @@ export function HeroSection() {
             </div>
             {/* Floating badge */}
             <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-6 right-6 rounded-2xl border border-green-deep/15 bg-cream shadow-card px-4 py-3"
+              className="absolute inset-0"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+              style={{ transformOrigin: "center center" }}
             >
-              <p className="text-xs uppercase tracking-wider text-green-deep/60" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Live TX</p>
-              <p className="text-sm font-semibold text-green-deep" style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>45 QUAI</p>
-            </motion.div>
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
-              className="absolute bottom-10 left-4 rounded-2xl border border-forge-primary/30 bg-cream shadow-card px-4 py-3"
-            >
-              <p className="text-xs uppercase tracking-wider text-warm-brown" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Confirmed ✓</p>
-              <p className="text-xs text-green-deep/60">On-chain record</p>
+              {/* Live TX badge — top-right quadrant (angle -45°) */}
+              <div
+                className="absolute"
+                style={{
+                  left: "79%",
+                  top: "21%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+                  className="rounded-2xl border border-green-deep/20 bg-cream shadow-card px-3 py-2 whitespace-nowrap"
+                >
+                  <p className="text-[10px] uppercase tracking-wider text-green-deep/60" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Live TX</p>
+                  <p className="text-sm font-semibold text-green-deep" style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>45 QUAI</p>
+                </motion.div>
+              </div>
+
+              {/* Confirmed badge — bottom-left quadrant (angle 135°) */}
+              <div
+                className="absolute"
+                style={{
+                  left: "21%",
+                  top: "79%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+                  className="rounded-2xl border border-forge-primary/30 bg-cream shadow-card px-3 py-2 whitespace-nowrap"
+                >
+                  <p className="text-[10px] uppercase tracking-wider text-warm-brown" style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}>Confirmed ✓</p>
+                  <p className="text-[10px] text-green-deep/60">On-chain record</p>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
         </motion.div>

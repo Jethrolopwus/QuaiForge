@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Menu, X, Wallet, CheckCircle2 } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
 import { WalletModal } from "@/components/WalletModal";
@@ -26,7 +26,7 @@ function scrollToSection(id: string) {
   window.scrollTo({ top, behavior: "smooth" });
 }
 
-const navbarVariants = {
+const navbarVariants : Variants = {
   hidden: { y: -80, opacity: 0 },
   visible: {
     y: 0,
@@ -35,7 +35,7 @@ const navbarVariants = {
   },
 };
 
-const mobileMenuVariants = {
+const mobileMenuVariants : Variants = {
   hidden: { opacity: 0, height: 0 },
   visible: {
     opacity: 1,

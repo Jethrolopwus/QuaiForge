@@ -1,25 +1,17 @@
 "use client";
 
 /**
- * /widget-demo — Merchant storefront demo in the cream + dark-green Figma palette.
+ * /widget-demo — Multi-merchant storefront demo in the cream + dark-green Figma palette.
  *
- * This page uses the same design language as the landing page: DM Serif Display
- * headings, Cormorant Garamond body copy, cream background, dark-green accents,
- * gold dividers. The embedded PayWithBlipButton is the only QuaiForge UI element
- * on each product card — exactly how a real merchant would integrate it.
- *
- * Startup checks surfaced here:
- *   • getContractConfigWarning() — shown as an amber banner if the contract
- *     address is missing or invalid (dev/staging only; production should have
- *     this set in .env.local before launch).
- *   • isWrongChain / switchChain — forwarded to every PayWithBlipButton so
- *     the checkout modal can prompt for a network switch before blocking the
- *     user with a cryptic RPC error.
+ * Merchants are switched via a tab bar. Each merchant has its own products,
+ * hero copy, and location — but they all share one MERCHANT_ADDRESS for
+ * this demo (per your setup, a real multi-tenant version would give each
+ * merchant its own payout address).
  */
 
 import { quais } from "quais";
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion, useInView, Variants, AnimatePresence } from "framer-motion";
+import { useRef, useState } from "react";
 import { ShoppingBag, MapPin, Star, ArrowRight, AlertTriangle } from "lucide-react";
 import {
   PayWithBlipButton,
@@ -30,7 +22,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { getContractConfigWarning } from "@/lib/paymentRegistry";
 
 /* ─── Animation variants ─────────────────────────────────── */
-const stagger = {
+const stagger: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -38,7 +30,7 @@ const stagger = {
   },
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 32 },
   visible: {
     opacity: 1,
@@ -47,7 +39,7 @@ const fadeUp = {
   },
 };
 
-const fadeIn = {
+const fadeIn: Variants = {
   hidden: { opacity: 0, y: 14 },
   visible: {
     opacity: 1,
@@ -56,12 +48,12 @@ const fadeIn = {
   },
 };
 
-/* ─── Merchant address ───────────────────────────────────── */
+/* ─── Shared merchant address (demo) ─────────────────────── */
 const MERCHANT_ADDRESS =
   process.env.NEXT_PUBLIC_MERCHANT_ADDRESS ??
   "0x0000000000000000000000000000000000000000";
 
-/* ─── Product data ───────────────────────────────────────── */
+/* ─── Product + Merchant data ────────────────────────────── */
 interface Product {
   name: string;
   description: string;
@@ -70,129 +62,180 @@ interface Product {
   badge?: string;
   rating: number;
   category: string;
-  /** gradient colors for the product illustration */
+  image: string;
   gradientFrom: string;
   gradientTo: string;
   svgAccent: string;
 }
 
-const PRODUCTS: Product[] = [
+interface Merchant {
+  id: string;
+  name: string;
+  tagline: string;
+  location: string;
+  products: Product[];
+}
+
+const MERCHANTS: Merchant[] = [
   {
-    name: "Agbada — Royal Indigo",
-    description:
-      "Hand-embroidered three-piece agbada, brocade finish. Crafted by master tailors in Jos, Plateau State.",
-    priceQuai: "45",
-    orderRef: "JNW-AGB-001",
-    badge: "Best Seller",
-    rating: 5,
-    category: "Traditional Wear",
-    gradientFrom: "#2C4870",
-    gradientTo: "#0F172A",
-    svgAccent: "#7BA4D4",
+    id: "jos-native-wears",
+    name: "Jos Native Wears",
+    tagline:
+      "Pay directly from your Blip wallet — no card, no checkout account.",
+    location: "Tailored in Plateau State · Ships nationwide",
+    products: [
+      {
+        name: "Agbada — Royal Indigo",
+        description:
+          "Hand-embroidered three-piece agbada, brocade finish. Crafted by master tailors in Jos, Plateau State.",
+        priceQuai: "45",
+        orderRef: "JNW-AGB-001",
+        badge: "Best Seller",
+        rating: 5,
+        category: "Traditional Wear",
+        image:
+          "https://wp-media-dejiandkola.s3.eu-west-2.amazonaws.com/2025/10/dejiandkola_africa_1760519943_3743835091635139925_30014923707-433x516.jpg",
+        gradientFrom: "#2C4870",
+        gradientTo: "#0F172A",
+        svgAccent: "#7BA4D4",
+      },
+      {
+        name: "Senator Kaftan — Onyx",
+        description:
+          "Slim-cut senator wear in premium cashmere-touch fabric. Understated elegance for every occasion.",
+        priceQuai: "28",
+        orderRef: "JNW-KFT-002",
+        badge: "New Arrival",
+        rating: 4,
+        category: "Contemporary",
+        image:
+          "https://imgs.search.brave.com/ejruBgykMD6_w8qKjueHeGECEgS73pkwlYePYkwpHOM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93cC1t/ZWRpYS1kZWppYW5k/a29sYS5zMy5ldS13/ZXN0LTIuYW1hem9u/YXdzLmNvbS8yMDI1/LzEwLzA3NkE4MzA0/LTEtNDMzeDUxNi5q/cGc",
+        gradientFrom: "#2D2D2D",
+        gradientTo: "#0a0a0a",
+        svgAccent: "#9CA3AF",
+      },
+      {
+        name: "Ankara Two-Piece — Plateau Dawn",
+        description:
+          "Bold wax-print set in sunrise colours, tailored to order in Jos. Ships nationwide within 5 days.",
+        priceQuai: "19",
+        orderRef: "JNW-ANK-003",
+        badge: "Limited",
+        rating: 5,
+        category: "Ankara",
+        image:
+          "https://imgs.search.brave.com/vhttBvrx1cPgGu-ly3NwuIB7DhTgZV1qxy2hnbFxfCg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzL2RiLzQz/LzljL2RiNDM5Y2E3/ZGIyYTg4ZDUwODkx/OTZhYjgzNWUxMGFm/LmpwZw",
+        gradientFrom: "#8A4A22",
+        gradientTo: "#3D1A08",
+        svgAccent: "#F59E0B",
+      },
+    ],
   },
   {
-    name: "Senator Kaftan — Onyx",
-    description:
-      "Slim-cut senator wear in premium cashmere-touch fabric. Understated elegance for every occasion.",
-    priceQuai: "28",
-    orderRef: "JNW-KFT-002",
-    badge: "New Arrival",
-    rating: 4,
-    category: "Contemporary",
-    gradientFrom: "#2D2D2D",
-    gradientTo: "#0a0a0a",
-    svgAccent: "#9CA3AF",
+    id: "plateau-leatherworks",
+    name: "Plateau Leatherworks",
+    tagline: "Full-grain leather goods, hand-tanned and stitched in Jos.",
+    location: "Workshop in Jos North · Ships nationwide",
+    products: [
+      {
+        name: "Weekender Duffel — Saddle Tan",
+        description:
+          "Full-grain cowhide duffel with brass hardware, built to age well over decades of travel.",
+        priceQuai: "62",
+        orderRef: "PLW-DUF-001",
+        badge: "Best Seller",
+        rating: 5,
+        category: "Bags",
+        image:
+          "https://imgs.search.brave.com/tWO59n-h2TWWBQtadvfCyKlACtabMdA3buFwxi47OuY/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9sb3R1/ZmZsZWF0aGVyLmNv/bS9jZG4vc2hvcC9m/aWxlcy9NR180Mzc5/XzIwMDB4LnByb2dy/ZXNzaXZlLmpwZz92/PTE3MTMyNzY4MDM",
+        gradientFrom: "#5C3A21",
+        gradientTo: "#2A1810",
+        svgAccent: "#C99A6B",
+      },
+      {
+        name: "Bifold Wallet — Espresso",
+        description:
+          "Slim hand-stitched bifold with six card slots and a coin pocket, cut from a single hide.",
+        priceQuai: "12",
+        orderRef: "PLW-WAL-002",
+        rating: 4,
+        category: "Accessories",
+        image:
+          "https://imgs.search.brave.com/MZTiV8mmc-CESzjFm4dHv8yBiHh21W9dQH6gyTdWR9c/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/ODFiSkV3VnVBeEwu/anBn",
+        gradientFrom: "#3D2817",
+        gradientTo: "#1A1109",
+        svgAccent: "#9C7B4F",
+      },
+      {
+        name: "Braided Belt — Cowhide Brown",
+        description:
+          "Hand-braided full-grain cowhide belt with a solid brass buckle, built to outlast the trend cycle.",
+        priceQuai: "16",
+        orderRef: "PLW-BLT-003",
+        badge: "Limited",
+        rating: 5,
+        category: "Accessories",
+        image:
+          "https://imgs.search.brave.com/qQ5V4K8XFU2cha09QNnMRJ1sSvukTFZDbULzsATI1Cc/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLmV0/c3lzdGF0aWMuY29t/LzIwMDE3Mjg5L3Iv/aWwvOGU1MDRjLzY1/NTkyMjM5NTUvaWxf/Nzk0eE4uNjU1OTIy/Mzk1NV9sZ2huLmpw/Zw",
+        gradientFrom: "#4A3222",
+        gradientTo: "#211408",
+        svgAccent: "#B98A5E",
+      },
+    ],
   },
   {
-    name: "Ankara Two-Piece — Plateau Dawn",
-    description:
-      "Bold wax-print set in sunrise colours, tailored to order in Jos. Ships nationwide within 5 days.",
-    priceQuai: "19",
-    orderRef: "JNW-ANK-003",
-    badge: "Limited",
-    rating: 5,
-    category: "Ankara",
-    gradientFrom: "#8A4A22",
-    gradientTo: "#3D1A08",
-    svgAccent: "#F59E0B",
+    id: "highland-ceramics",
+    name: "Highland Ceramics",
+    tagline: "Hand-thrown stoneware fired in a wood kiln on the Jos plateau.",
+    location: "Studio in Vom · Ships nationwide",
+    products: [
+      {
+        name: "Glazed Serving Bowl — Ash Green",
+        description:
+          "Wood-fired stoneware bowl with a natural ash glaze; no two pieces are exactly alike.",
+        priceQuai: "22",
+        orderRef: "HLC-BWL-001",
+        badge: "New Arrival",
+        rating: 5,
+        category: "Tableware",
+        image:
+          "https://imgs.search.brave.com/omaCSqT0hz9OPw48Qr6npnSDnmH07UI7k6nk01m19fo/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLmV0/c3lzdGF0aWMuY29t/LzExNzgxNTgzL3Iv/aWwvMWNiMTkzLzg2/ODU1NTM0OS9pbF8z/MDB4MzAwLjg2ODU1/NTM0OV9nMzYzLmpw/Zw",
+        gradientFrom: "#3E4A3D",
+        gradientTo: "#1B221A",
+        svgAccent: "#8FAE87",
+      },
+      {
+        name: "Stoneware Mug — Oatmeal Speckle",
+        description:
+          "Wheel-thrown mug with a matte speckled glaze; holds heat well and fits most drip cone filters.",
+        priceQuai: "9",
+        orderRef: "HLC-MUG-002",
+        badge: "New Arrival",
+        rating: 4,
+        category: "Tableware",
+        image:
+          "https://imgs.search.brave.com/3wIxj4V-YNLPyrL2-GAxu38B3bB7L1nOIga80o3dWGo/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLmV0/c3lzdGF0aWMuY29t/LzIxMzc2MDI3L3Iv/aWwvNjZmMGQ5Lzc4/NTU5NzAzNTAvaWxf/MzAweDMwMC43ODU1/OTcwMzUwX2N5Y3Yu/anBn",
+        gradientFrom: "#5A5142",
+        gradientTo: "#26221B",
+        svgAccent: "#C4B79A",
+      },
+      {
+        name: "Carafe & Cup Set — Slate Blue",
+        description:
+          "Bedside water carafe with matching cup, dipped in a slate-blue glaze over dark stoneware clay.",
+        priceQuai: "18",
+        orderRef: "HLC-CRF-003",
+        rating: 5,
+        category: "Tableware",
+        image:
+          "https://imgs.search.brave.com/05X4qMhGg1Kb5awvwiXn0kxaz6pthwqFP0RFnhbcEII/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLmV0/c3lzdGF0aWMuY29t/LzM0NDkyMDk3L3Iv/aWwvYzM3MTk1Lzc1/MzYxMjU3NjUvaWxf/MzAweDMwMC43NTM2/MTI1NzY1X3E3YTMu/anBn",
+        gradientFrom: "#3A4550",
+        gradientTo: "#181E24",
+        svgAccent: "#8FA3B5",
+      },
+    ],
   },
 ];
-
-/* ─── Inline garment illustration ───────────────────────── */
-function GarmentIllustration({
-  gradientFrom,
-  gradientTo,
-  svgAccent,
-  name,
-}: {
-  gradientFrom: string;
-  gradientTo: string;
-  svgAccent: string;
-  name: string;
-}) {
-  return (
-    <div
-      className="relative w-full h-52 overflow-hidden"
-      style={{ background: `linear-gradient(150deg, ${gradientFrom} 0%, ${gradientTo} 100%)` }}
-      role="img"
-      aria-label={`${name} product illustration`}
-    >
-      {/* Subtle grid overlay */}
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)`,
-          backgroundSize: "28px 28px",
-        }}
-      />
-      {/* Decorative SVG garment shape */}
-      <svg
-        viewBox="0 0 200 200"
-        fill="none"
-        className="absolute inset-0 w-full h-full"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Abstract fabric silhouette */}
-        <path
-          d="M60 40 L80 20 L100 30 L120 20 L140 40 L130 60 L150 80 L150 160 L50 160 L50 80 L70 60 Z"
-          fill={svgAccent}
-          fillOpacity="0.18"
-          stroke={svgAccent}
-          strokeWidth="1"
-          strokeOpacity="0.3"
-        />
-        {/* Collar */}
-        <path
-          d="M85 30 Q100 45 115 30"
-          stroke={svgAccent}
-          strokeWidth="2"
-          fill="none"
-          strokeLinecap="round"
-          strokeOpacity="0.6"
-        />
-        {/* Embroidery patterns */}
-        <circle cx="100" cy="75" r="3" fill={svgAccent} fillOpacity="0.5" />
-        <circle cx="88" cy="85" r="2" fill={svgAccent} fillOpacity="0.4" />
-        <circle cx="112" cy="85" r="2" fill={svgAccent} fillOpacity="0.4" />
-        <circle cx="80" cy="100" r="2" fill={svgAccent} fillOpacity="0.3" />
-        <circle cx="120" cy="100" r="2" fill={svgAccent} fillOpacity="0.3" />
-        {/* Pattern rows */}
-        <path d="M70 115 L130 115" stroke={svgAccent} strokeWidth="1" strokeOpacity="0.2" strokeDasharray="3 4" />
-        <path d="M65 130 L135 130" stroke={svgAccent} strokeWidth="1" strokeOpacity="0.2" strokeDasharray="3 4" />
-        <path d="M70 145 L130 145" stroke={svgAccent} strokeWidth="1" strokeOpacity="0.2" strokeDasharray="3 4" />
-      </svg>
-      {/* Price tag floating element */}
-      <div className="absolute top-4 right-4 rounded-xl border border-white/15 bg-black/30 backdrop-blur-sm px-3 py-1.5">
-        <span
-          className="text-white font-semibold text-sm"
-          style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
-        >
-          {/* price shown in card below */}
-        </span>
-      </div>
-    </div>
-  );
-}
 
 /* ─── Star rating ────────────────────────────────────────── */
 function StarRating({ rating }: { rating: number }) {
@@ -206,6 +249,51 @@ function StarRating({ rating }: { rating: number }) {
           strokeWidth={1.5}
         />
       ))}
+    </div>
+  );
+}
+
+/* ─── Merchant tab bar ───────────────────────────────────── */
+function MerchantTabs({
+  merchants,
+  activeId,
+  onSelect,
+}: {
+  merchants: Merchant[];
+  activeId: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Select merchant"
+      className="flex flex-wrap gap-2 border-b border-green-deep/10 pb-1"
+    >
+      {merchants.map((m) => {
+        const active = m.id === activeId;
+        return (
+          <button
+            key={m.id}
+            role="tab"
+            aria-selected={active}
+            onClick={() => onSelect(m.id)}
+            className={`relative px-4 py-2 text-sm uppercase tracking-widest transition-colors ${
+              active ? "text-green-deep" : "text-green-deep/40 hover:text-green-deep/70"
+            }`}
+            style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}
+          >
+            {m.name}
+            {active && (
+              <motion.div
+                layoutId="merchant-tab-underline"
+                className="absolute left-0 right-0 -bottom-[5px] h-[2px]"
+                style={{ background: "#B87333" }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -235,17 +323,10 @@ function ProductCard({
       whileHover={{ y: -4, transition: { duration: 0.25 } }}
       className="flex flex-col overflow-hidden rounded-2xl border border-green-deep/10 bg-cream shadow-card transition-shadow hover:shadow-[0_8px_40px_rgba(27,58,45,0.12)]"
     >
-      {/* Product illustration */}
-      <GarmentIllustration
-        gradientFrom={product.gradientFrom}
-        gradientTo={product.gradientTo}
-        svgAccent={product.svgAccent}
-        name={product.name}
-      />
-
-      {/* Card content */}
+      <div>
+        <img src={product.image} alt={product.name} className="object-cover w-full aspect-square" />
+      </div>
       <div className="flex flex-1 flex-col p-6 gap-3">
-        {/* Category + badge row */}
         <div className="flex items-center justify-between">
           <span
             className="text-xs uppercase tracking-widest text-green-deep/45"
@@ -263,7 +344,6 @@ function ProductCard({
           )}
         </div>
 
-        {/* Name */}
         <h2
           className="text-xl text-green-deep leading-snug"
           style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontWeight: 400 }}
@@ -271,10 +351,8 @@ function ProductCard({
           {product.name}
         </h2>
 
-        {/* Rating */}
         <StarRating rating={product.rating} />
 
-        {/* Description */}
         <p
           className="flex-1 text-green-deep/60 leading-relaxed"
           style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "0.98rem", lineHeight: 1.65 }}
@@ -282,10 +360,8 @@ function ProductCard({
           {product.description}
         </p>
 
-        {/* Gold divider */}
         <div className="h-px bg-gold-line/25 my-1" />
 
-        {/* Price + order ref row */}
         <div className="flex items-baseline justify-between">
           <span
             className="text-2xl text-green-deep"
@@ -302,7 +378,6 @@ function ProductCard({
           </span>
         </div>
 
-        {/* Embedded QuaiForge widget */}
         <PayWithBlipButton
           order={order}
           wallet={walletContext}
@@ -319,20 +394,19 @@ export default function WidgetDemoPage() {
   const gridRef = useRef(null);
   const gridInView = useInView(gridRef, { once: true, margin: "0px 0px -60px 0px" });
 
-  // Wallet state — forwarded to every PayWithBlipButton so CheckoutModal
-  // can surface a wrong-chain banner instead of a cryptic RPC error.
+  const [activeMerchantId, setActiveMerchantId] = useState(MERCHANTS[0].id);
+  const activeMerchant =
+    MERCHANTS.find((m) => m.id === activeMerchantId) ?? MERCHANTS[0];
+
   const wallet = useWallet();
   const walletContext = wallet.isConnected
     ? { provider: wallet.provider, address: wallet.address }
     : undefined;
 
-  // Contract config warning — shown as a sticky amber banner at the top of
-  // the page if NEXT_PUBLIC_CONTRACT_ADDRESS is missing or malformed.
   const configWarning = getContractConfigWarning();
 
   return (
     <main className="bg-cream min-h-screen overflow-x-hidden">
-      {/* ── Contract config warning banner ──────────────────── */}
       {configWarning && (
         <div className="sticky top-0 z-40 flex items-start gap-3 bg-amber-950/95 px-6 py-3 backdrop-blur-sm border-b border-amber-500/30">
           <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-400" aria-hidden />
@@ -342,9 +416,9 @@ export default function WidgetDemoPage() {
           </p>
         </div>
       )}
+
       {/* Merchant hero header */}
       <section className="relative pt-28 pb-16 bg-cream overflow-hidden">
-        {/* Decorative bg blobs */}
         <div
           aria-hidden
           className="pointer-events-none absolute top-20 right-0 h-80 w-80 rounded-full bg-green-deep/5 blur-3xl"
@@ -361,7 +435,6 @@ export default function WidgetDemoPage() {
             animate="visible"
             className="flex flex-col gap-4"
           >
-            {/* Breadcrumb */}
             <motion.div variants={fadeIn} className="flex items-center gap-2">
               <span
                 className="text-xs uppercase tracking-widest text-green-deep/40"
@@ -378,52 +451,67 @@ export default function WidgetDemoPage() {
               </span>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="flex items-start justify-between flex-wrap gap-6">
-              <div>
-                <h1
-                  className="text-4xl md:text-5xl text-green-deep leading-tight"
-                  style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontWeight: 400 }}
-                >
-                  Jos Native Wears
-                </h1>
-                <div className="flex items-center gap-3 mt-3">
-                  <MapPin size={14} className="text-gold-line" />
-                  <span
-                    className="text-sm text-green-deep/55"
-                    style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-                  >
-                    Tailored in Plateau State · Ships nationwide
-                  </span>
-                </div>
-              </div>
-
-              {/* Accepts QUAI badge */}
-              <div className="flex items-center gap-2 rounded-full border border-forge-primary/30 bg-forge-primary/8 px-5 py-2.5">
-                <span className="h-2 w-2 rounded-full bg-forge-primary animate-pulse-dot" />
-                <span
-                  className="text-xs uppercase tracking-widest text-forge-primary"
-                  style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}
-                >
-                  Accepts QUAI
-                </span>
-              </div>
+            {/* Merchant tabs */}
+            <motion.div variants={fadeIn}>
+              <MerchantTabs
+                merchants={MERCHANTS}
+                activeId={activeMerchantId}
+                onSelect={setActiveMerchantId}
+              />
             </motion.div>
 
-            <motion.p
-              variants={fadeIn}
-              className="max-w-xl text-green-deep/60 leading-relaxed mt-2"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.05rem", lineHeight: 1.75 }}
-            >
-              Pay directly from your Blip wallet — no card, no checkout
-              account. Powered by the embedded{" "}
-              <span className="text-green-deep font-medium">QuaiForge</span>{" "}
-              widget.
-            </motion.p>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeMerchant.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-start justify-between flex-wrap gap-6">
+                  <div>
+                    <h1
+                      className="text-4xl md:text-5xl text-green-deep leading-tight"
+                      style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontWeight: 400 }}
+                    >
+                      {activeMerchant.name}
+                    </h1>
+                    <div className="flex items-center gap-3 mt-3">
+                      <MapPin size={14} className="text-gold-line" />
+                      <span
+                        className="text-sm text-green-deep/55"
+                        style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                      >
+                        {activeMerchant.location}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 rounded-full border border-forge-primary/30 bg-forge-primary/8 px-5 py-2.5">
+                    <span className="h-2 w-2 rounded-full bg-forge-primary animate-pulse-dot" />
+                    <span
+                      className="text-xs uppercase tracking-widest text-forge-primary"
+                      style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}
+                    >
+                      Accepts QUAI
+                    </span>
+                  </div>
+                </div>
+
+                <p
+                  className="max-w-xl text-green-deep/60 leading-relaxed mt-4"
+                  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.05rem", lineHeight: 1.75 }}
+                >
+                  {activeMerchant.tagline} Powered by the embedded{" "}
+                  <span className="text-green-deep font-medium">QuaiForge</span>{" "}
+                  widget.
+                </p>
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         </div>
       </section>
 
-      {/* Gold section divider */}
       <div className="mx-auto max-w-6xl px-6">
         <div
           className="h-px"
@@ -433,44 +521,46 @@ export default function WidgetDemoPage() {
 
       {/* Product grid */}
       <section ref={gridRef} className="mx-auto max-w-6xl px-6 py-16">
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          animate={gridInView ? "visible" : "hidden"}
-          className="flex flex-col gap-10"
-        >
-          {/* Grid heading */}
-          <motion.div variants={fadeIn} className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ShoppingBag size={18} className="text-green-deep/50" />
-              <h2
-                className="text-2xl text-green-deep"
-                style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontWeight: 400 }}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeMerchant.id}
+            variants={stagger}
+            initial="hidden"
+            animate={gridInView ? "visible" : "hidden"}
+            exit={{ opacity: 0 }}
+            className="flex flex-col gap-10"
+          >
+            <motion.div variants={fadeIn} className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <ShoppingBag size={18} className="text-green-deep/50" />
+                <h2
+                  className="text-2xl text-green-deep"
+                  style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontWeight: 400 }}
+                >
+                  New Arrivals
+                </h2>
+              </div>
+              <span
+                className="text-xs uppercase tracking-widest text-green-deep/35"
+                style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}
               >
-                New Arrivals
-              </h2>
-            </div>
-            <span
-              className="text-xs uppercase tracking-widest text-green-deep/35"
-              style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}
-            >
-              {PRODUCTS.length} items
-            </span>
-          </motion.div>
+                {activeMerchant.products.length} items
+              </span>
+            </motion.div>
 
-          {/* Cards */}
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {PRODUCTS.map((p) => (
-              <ProductCard
-                key={p.orderRef}
-                product={p}
-                walletContext={walletContext}
-                isWrongChain={wallet.isWrongChain}
-                switchChain={wallet.switchChain}
-              />
-            ))}
-          </div>
-        </motion.div>
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {activeMerchant.products.map((p) => (
+                <ProductCard
+                  key={p.orderRef}
+                  product={p}
+                  walletContext={walletContext}
+                  isWrongChain={wallet.isWrongChain}
+                  switchChain={wallet.switchChain}
+                />
+              ))}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </section>
 
       {/* Powered-by strip */}
