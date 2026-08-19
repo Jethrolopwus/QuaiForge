@@ -95,7 +95,9 @@ async function main() {
   //   • Routes RPCs to the correct shard based on the address prefix
   //   • Uses the quai_* JSON-RPC namespace automatically
   //   • Serializes transactions in Quai's wire format (not standard Ethereum RLP)
-  const provider = new quais.JsonRpcProvider(rpcUrl, undefined, { usePathing: true });
+
+  // const provider = new quais.JsonRpcProvider(rpcUrl, undefined, { usePathing: true });
+  const provider = new quais.JsonRpcProvider(rpcUrl,{ chainId: 15000, name: "orchard" },{ usePathing: false, staticNetwork: true });
   const wallet   = new quais.Wallet(privateKey, provider);
 
   const deployerAddress  = wallet.address;
@@ -127,7 +129,18 @@ async function main() {
   //   1. Serializes the deployment tx in Quai's protobuf wire format
   //   2. Sends via quai_sendRawTransaction (not eth_sendRawTransaction)
   // quais also auto-grinds the contract address to land in the correct shard.
-  const factory  = new quais.ContractFactory(artifact.abi, artifact.bytecode, wallet);
+  // const factory  = new quais.ContractFactory(artifact.abi, artifact.bytecode, wallet);
+
+
+
+// Workaround: quais@1.0.0-alpha.56's ContractFactory.deploy() has a bug where
+// omitting the 4th (ipfsHash) constructor arg falls back to the literal string
+// "IPFSHash" instead of null (looks like an `x || "IPFSHash"` typo upstream),
+// which then fails the SDK's own 46-char validation. PaymentRegistry doesn't
+// use real IPFS metadata (see hardhat.config.js), so this dummy CIDv0-shaped
+// string is a harmless placeholder — nothing checks that it resolves on IPFS.
+const dummyIpfsHash = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
+const factory = new quais.ContractFactory(artifact.abi, artifact.bytecode, wallet, dummyIpfsHash);
   const contract = await factory.deploy();
 
   const deployTxHash = contract.deploymentTransaction()?.hash;

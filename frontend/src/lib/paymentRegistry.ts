@@ -14,6 +14,7 @@ import { quais } from "quais";
 import artifact from "./artifacts/paymentRegistry.json";
 import { getHttpProvider, createWssProvider } from "./quaisClient";
 import type { Eip1193Provider } from "./BlipProviderDetector";
+const { abi } = artifact;
 
 export const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "";
