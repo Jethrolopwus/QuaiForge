@@ -16,7 +16,7 @@
  */
 
 import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence,Variants } from "framer-motion";
 import { X, AlertTriangle, CheckCircle2, Loader2, Wallet } from "lucide-react";
 import { buildOpenInBlipLink } from "@/lib/blipDeepLinks";
 
@@ -41,13 +41,13 @@ interface WalletModalProps {
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 
-const backdropVariants = {
+const backdropVariants : Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.2 } },
   exit: { opacity: 0, transition: { duration: 0.15 } },
 };
 
-const panelVariants = {
+const panelVariants : Variants = {
   hidden: { opacity: 0, y: 24, scale: 0.97 },
   visible: {
     opacity: 1,
