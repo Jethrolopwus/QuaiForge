@@ -44,12 +44,12 @@ const FOOTER_LINKS: Record<string, FooterLink[]> = {
   ],
   Resources: [
     { label: "Documentation", href: "#", external: true },
-    { label: "GitHub", href: "https://github.com", external: true },
+    { label: "GitHub", href: "https://github.com/Jethrolopwus/QuaiForge", external: true },
     { label: "Orchard Explorer", href: "https://orchard.quaiscan.io", external: true },
     { label: "Buildathon", href: "#", external: false },
   ],
   Community: [
-    { label: "Twitter / X", href: "https://twitter.com", external: true },
+    { label: "Twitter / X", href: "https://x.com/QuaiForge", external: true },
     { label: "Discord", href: "#", external: true },
     { label: "Telegram", href: "#", external: true },
     { label: "Blog", href: "#", external: false },
@@ -129,8 +129,8 @@ export function Footer() {
             {/* Social icons */}
             <div className="flex gap-3 mt-2">
               {[
-                { icon: Github, href: "https://github.com", label: "GitHub" },
-                { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+                { icon: Github, href: "https://github.com/Jethrolopwus/QuaiForge", label: "GitHub" },
+                { icon: Twitter, href: "https://x.com/QuaiForge", label: "Twitter" },
                 { icon: Send, href: "#telegram", label: "Telegram" },
               ].map(({ icon: Icon, href, label }) => (
                 <a
