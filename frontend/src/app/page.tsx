@@ -368,7 +368,7 @@ function AboutSection() {
 
   const aboutImages = [
     "https://pbs.twimg.com/profile_images/1932754865488355329/6STPvmBO_400x400.jpg",
-    "https://pbs.twimg.com/media/HJ-a63SWgAAyxvD?format=jpg&name=large",
+    "https://pbs.twimg.com/profile_images/1848965330216873984/qsX7bGm3_400x400.jpg",
     "https://pbs.twimg.com/profile_images/2028447934153707520/z1ryqdKd_400x400.jpg",
   ];
 
